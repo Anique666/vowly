@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,14 +16,64 @@ import {
   Sparkles, Calendar, Users, Utensils, Home, Send, 
   ChevronRight, Loader2, UserCheck, Bot, User, X, 
   AlertTriangle, Edit, CheckCircle, Rocket, MessageCircle,
-  Timer, Clock
+  Timer, Clock, PartyPopper
 } from 'lucide-react';
 import Link from 'next/link';
+
+// Parse date string to Date object - handles various formats
+const parseWeddingDate = (dateStr) => {
+  if (!dateStr) return null;
+  
+  // If already a valid Date
+  if (dateStr instanceof Date && !isNaN(dateStr)) return dateStr;
+  
+  // Try ISO format first (YYYY-MM-DD)
+  let date = new Date(dateStr + 'T00:00:00');
+  if (!isNaN(date.getTime())) return date;
+  
+  // Try DD-MM-YYYY format
+  const ddmmyyyy = dateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (ddmmyyyy) {
+    date = new Date(`${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}T00:00:00`);
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  // Try MM/DD/YYYY format
+  const mmddyyyy = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (mmddyyyy) {
+    date = new Date(`${mmddyyyy[3]}-${mmddyyyy[1]}-${mmddyyyy[2]}T00:00:00`);
+    if (!isNaN(date.getTime())) return date;
+  }
+  
+  return null;
+};
+
+// Calculate countdown values safely
+const calculateCountdown = (targetDate) => {
+  if (!targetDate || isNaN(targetDate.getTime())) {
+    return null;
+  }
+
+  const now = new Date();
+  const diff = targetDate.getTime() - now.getTime();
+
+  if (diff <= 0) {
+    return { isPast: true, days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  return { isPast: false, days, hours, minutes, seconds };
+};
 
 export default function DashboardPage() {
   const { toast } = useToast();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
   const chatEndRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
 
   // State
   const [weddings, setWeddings] = useState([]);
@@ -34,8 +84,10 @@ export default function DashboardPage() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Countdown state
+  // Countdown state - FIXED
   const [countdown, setCountdown] = useState(null);
+  const [countdownLabel, setCountdownLabel] = useState('');
+  const [countdownVenue, setCountdownVenue] = useState('');
 
   // Chat State
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -68,67 +120,128 @@ export default function DashboardPage() {
     }
   }, [selectedWeddingId]);
 
-  // Countdown timer
-  useEffect(() => {
-    if (!wedding) return;
+  // Countdown timer - FIXED with proper cleanup
+  const updateCountdown = useCallback(() => {
+    if (!wedding) {
+      setCountdown(null);
+      setCountdownLabel('');
+      setCountdownVenue('');
+      return;
+    }
 
-    const updateCountdown = () => {
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      const startDate = new Date(wedding.startDate + 'T00:00:00');
-      const endDate = new Date(wedding.endDate + 'T23:59:59');
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
+    // Parse wedding dates
+    const startDate = parseWeddingDate(wedding.startDate);
+    const endDate = parseWeddingDate(wedding.endDate);
 
-      if (now < startDate) {
-        // Wedding hasn't started
-        const diff = startDate.getTime() - now.getTime();
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    // Validate dates
+    if (!startDate) {
+      setCountdown(null);
+      setCountdownLabel('Invalid wedding date');
+      return;
+    }
+
+    // Set end of day for end date comparison
+    const endDateTime = endDate ? new Date(endDate.getTime() + 24 * 60 * 60 * 1000 - 1) : null;
+
+    // Check if wedding hasn't started yet
+    if (now < startDate) {
+      const result = calculateCountdown(startDate);
+      if (result) {
+        setCountdown(result);
+        setCountdownLabel('Wedding starts in');
+        setCountdownVenue('');
+      }
+      return;
+    }
+
+    // Check if wedding is ongoing (between start and end date)
+    if (endDateTime && now <= endDateTime) {
+      // Find today's events
+      const todayIndex = wedding.days?.findIndex(d => d.date === today);
+      
+      if (todayIndex >= 0 && wedding.days[todayIndex].events) {
+        const todayEvents = wedding.days[todayIndex].events;
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
         
-        setCountdown({
-          type: 'wedding-start',
-          label: 'Wedding starts in',
-          days, hours, minutes, seconds
-        });
-      } else if (now <= endDate) {
-        // Wedding is ongoing - find next event
-        const todayIndex = wedding.days?.findIndex(d => d.date === today);
-        
-        if (todayIndex >= 0) {
-          const todayEvents = wedding.days[todayIndex].events || [];
-          const currentTime = now.getHours() * 60 + now.getMinutes();
+        // Find next upcoming event today
+        for (const event of todayEvents) {
+          if (!event.time) continue;
           
-          for (const event of todayEvents) {
-            const [eventHours, eventMinutes] = event.time.split(':').map(Number);
-            const eventTime = eventHours * 60 + eventMinutes;
+          const [eventHours, eventMinutes] = event.time.split(':').map(Number);
+          if (isNaN(eventHours) || isNaN(eventMinutes)) continue;
+          
+          const eventTotalMinutes = eventHours * 60 + eventMinutes;
+          
+          if (eventTotalMinutes > currentMinutes) {
+            // Create target date/time for this event
+            const eventDate = new Date(today + 'T' + event.time + ':00');
+            const result = calculateCountdown(eventDate);
             
-            if (eventTime > currentTime) {
-              const diffMins = eventTime - currentTime;
-              const hours = Math.floor(diffMins / 60);
-              const minutes = diffMins % 60;
-              
-              setCountdown({
-                type: 'next-event',
-                label: `${event.name} starts in`,
-                venue: event.venue,
-                hours, minutes, seconds: 0
-              });
+            if (result && !result.isPast) {
+              setCountdown(result);
+              setCountdownLabel(`${event.name} starts in`);
+              setCountdownVenue(event.venue || '');
               return;
             }
           }
         }
+      }
+      
+      // All events for today have passed, check next day
+      const nextDayIndex = (todayIndex >= 0 ? todayIndex : -1) + 1;
+      if (wedding.days && nextDayIndex < wedding.days.length) {
+        const nextDay = wedding.days[nextDayIndex];
+        const firstEvent = nextDay.events?.[0];
         
-        setCountdown({ type: 'ongoing', label: 'Wedding in progress!' });
-      } else {
-        setCountdown(null);
+        if (firstEvent && nextDay.date && firstEvent.time) {
+          const eventDate = new Date(nextDay.date + 'T' + firstEvent.time + ':00');
+          const result = calculateCountdown(eventDate);
+          
+          if (result && !result.isPast) {
+            setCountdown(result);
+            setCountdownLabel(`${firstEvent.name} starts in`);
+            setCountdownVenue(firstEvent.venue || '');
+            return;
+          }
+        }
+      }
+      
+      // Wedding is ongoing but no more events
+      setCountdown({ isLive: true });
+      setCountdownLabel('Wedding is live!');
+      setCountdownVenue('');
+      return;
+    }
+
+    // Wedding has ended
+    setCountdown({ isPast: true });
+    setCountdownLabel('Wedding has concluded');
+    setCountdownVenue('');
+  }, [wedding]);
+
+  // Setup countdown interval
+  useEffect(() => {
+    // Initial update
+    updateCountdown();
+
+    // Clear existing interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
+
+    // Set up new interval - update every second
+    countdownIntervalRef.current = setInterval(updateCountdown, 1000);
+
+    // Cleanup
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
       }
     };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [wedding]);
+  }, [updateCountdown]);
 
   // Scroll chat to bottom
   useEffect(() => {
@@ -287,7 +400,6 @@ export default function DashboardPage() {
     }
 
     try {
-      // Send email to vendor
       if (targetVendor.email) {
         await fetch(`${backendUrl}/api/email/send-invites`, {
           method: 'POST',
@@ -329,7 +441,6 @@ export default function DashboardPage() {
 
     setIsSubmittingVendorComplaint(true);
     try {
-      // Generate professional message using AI
       const response = await fetch(`${backendUrl}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -342,9 +453,6 @@ export default function DashboardPage() {
 
       if (!response.ok) throw new Error('Failed to generate message');
 
-      const data = await response.json();
-
-      // Send email if vendor has email
       if (selectedVendorForComplaint.email) {
         await fetch(`${backendUrl}/api/email/send-invites`, {
           method: 'POST',
@@ -413,6 +521,90 @@ export default function DashboardPage() {
   const stats = wedding ? getGuestStatsForDay(selectedDayIndex) : null;
   const vendorStats = getVendorStats();
 
+  // Render countdown component
+  const renderCountdown = () => {
+    if (!countdown) return null;
+
+    // Wedding has ended
+    if (countdown.isPast) {
+      return (
+        <Card className="mb-6 border-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white shadow-lg">
+          <CardContent className="py-5">
+            <div className="flex items-center justify-center gap-4">
+              <div className="p-3 rounded-full bg-gray-200">
+                <CheckCircle className="w-6 h-6 text-gray-500" />
+              </div>
+              <span className="text-lg font-medium text-gray-600">{countdownLabel}</span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Wedding is live
+    if (countdown.isLive) {
+      return (
+        <Card className="mb-6 border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg">
+          <CardContent className="py-5">
+            <div className="flex items-center justify-center gap-4">
+              <div className="p-3 rounded-full bg-green-500 animate-pulse">
+                <PartyPopper className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold text-green-700">🎉 {countdownLabel}</span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Active countdown
+    const { days, hours, minutes, seconds } = countdown;
+
+    return (
+      <Card className="mb-6 border-2 border-primary/20 shadow-lg bg-gradient-to-r from-primary/5 via-amber-50/50 to-primary/5">
+        <CardContent className="py-5">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-gradient-to-br from-primary to-amber-400">
+                <Timer className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground font-medium">{countdownLabel}</p>
+                {countdownVenue && <p className="text-xs text-muted-foreground">at {countdownVenue}</p>}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 md:ml-auto">
+              {days > 0 && (
+                <>
+                  <div className="text-center">
+                    <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums">{days}</div>
+                    <div className="text-xs text-muted-foreground uppercase">Days</div>
+                  </div>
+                  <span className="text-xl text-muted-foreground">:</span>
+                </>
+              )}
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums">{String(hours).padStart(2, '0')}</div>
+                <div className="text-xs text-muted-foreground uppercase">Hrs</div>
+              </div>
+              <span className="text-xl text-muted-foreground">:</span>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums">{String(minutes).padStart(2, '0')}</div>
+                <div className="text-xs text-muted-foreground uppercase">Min</div>
+              </div>
+              <span className="text-xl text-muted-foreground">:</span>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary tabular-nums">{String(seconds).padStart(2, '0')}</div>
+                <div className="text-xs text-muted-foreground uppercase">Sec</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-amber-50/30 to-white">
       {/* Header */}
@@ -480,67 +672,8 @@ export default function DashboardPage() {
               </motion.div>
             ) : wedding && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-                {/* Countdown Timer */}
-                {countdown && countdown.type !== 'ongoing' && (
-                  <Card className="mb-6 border-2 border-primary/20 shadow-lg bg-gradient-to-r from-primary/5 via-amber-50/50 to-primary/5">
-                    <CardContent className="py-5">
-                      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                        <div className="flex items-center gap-3">
-                          <div className="p-3 rounded-full bg-gradient-to-br from-primary to-amber-400">
-                            <Timer className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">{countdown.label}</p>
-                            {countdown.venue && <p className="text-xs text-muted-foreground">at {countdown.venue}</p>}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 md:ml-auto">
-                          {countdown.days !== undefined && countdown.days > 0 && (
-                            <>
-                              <div className="text-center">
-                                <div className="text-3xl font-bold text-primary tabular-nums">{countdown.days}</div>
-                                <div className="text-xs text-muted-foreground uppercase">Days</div>
-                              </div>
-                              <span className="text-xl text-muted-foreground">:</span>
-                            </>
-                          )}
-                          <div className="text-center">
-                            <div className="text-3xl font-bold text-primary tabular-nums">{String(countdown.hours).padStart(2, '0')}</div>
-                            <div className="text-xs text-muted-foreground uppercase">Hrs</div>
-                          </div>
-                          <span className="text-xl text-muted-foreground">:</span>
-                          <div className="text-center">
-                            <div className="text-3xl font-bold text-primary tabular-nums">{String(countdown.minutes).padStart(2, '0')}</div>
-                            <div className="text-xs text-muted-foreground uppercase">Min</div>
-                          </div>
-                          {countdown.seconds !== undefined && (
-                            <>
-                              <span className="text-xl text-muted-foreground">:</span>
-                              <div className="text-center">
-                                <div className="text-3xl font-bold text-primary tabular-nums">{String(countdown.seconds).padStart(2, '0')}</div>
-                                <div className="text-xs text-muted-foreground uppercase">Sec</div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {countdown?.type === 'ongoing' && (
-                  <Card className="mb-6 border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg">
-                    <CardContent className="py-5">
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="p-3 rounded-full bg-green-500 animate-pulse">
-                          <Sparkles className="w-6 h-6 text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-green-700">🎉 {countdown.label}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                {/* Countdown Timer - FIXED */}
+                {renderCountdown()}
 
                 {/* Wedding Info Card */}
                 <Card className="mb-6 border-2 border-primary/20 shadow-lg">
@@ -729,7 +862,6 @@ export default function DashboardPage() {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <div className="flex flex-col h-full">
-                {/* Chat Header */}
                 <div className="p-4 border-b border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -747,7 +879,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Quick Actions */}
                 <div className="p-3 border-b border-primary/10 bg-amber-50/50">
                   <p className="text-xs text-muted-foreground mb-2">Quick Actions</p>
                   <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-amber-700 border-amber-300 hover:bg-amber-100" onClick={handleStartComplaint}>
@@ -756,22 +887,10 @@ export default function DashboardPage() {
                   </Button>
                 </div>
 
-                {/* Complaint Input */}
                 {isComplaintMode && (
-                  <motion.div 
-                    className="p-4 border-b border-primary/10 bg-red-50"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
+                  <motion.div className="p-4 border-b border-primary/10 bg-red-50" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                     <p className="text-sm font-medium text-red-700 mb-2">Describe the issue:</p>
-                    <Textarea
-                      value={complaintText}
-                      onChange={(e) => setComplaintText(e.target.value)}
-                      placeholder="e.g., Caterer is late by 30 minutes"
-                      className="mb-2 border-red-200 focus:border-red-400"
-                      rows={2}
-                    />
+                    <Textarea value={complaintText} onChange={(e) => setComplaintText(e.target.value)} placeholder="e.g., Caterer is late by 30 minutes" className="mb-2 border-red-200 focus:border-red-400" rows={2} />
                     <div className="flex gap-2">
                       <Button size="sm" onClick={handleSubmitComplaint} disabled={!complaintText.trim() || isSendingChat} className="bg-red-600 hover:bg-red-700">
                         {isSendingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Draft Message'}
@@ -781,7 +900,6 @@ export default function DashboardPage() {
                   </motion.div>
                 )}
 
-                {/* Chat Messages */}
                 <ScrollArea className="flex-1 p-4">
                   {chatMessages.length === 0 ? (
                     <div className="text-center py-8">
@@ -800,12 +918,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="space-y-4">
                       {chatMessages.map((msg, index) => (
-                        <motion.div 
-                          key={index} 
-                          className={`flex ${msg.role === 'user' ? 'justify-end' : msg.role === 'system' ? 'justify-center' : 'justify-start'}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
+                        <motion.div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : msg.role === 'system' ? 'justify-center' : 'justify-start'}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                           {msg.role === 'system' ? (
                             <div className="text-xs text-center text-green-600 bg-green-50 px-3 py-1.5 rounded-full">{msg.content}</div>
                           ) : (
@@ -849,16 +962,9 @@ export default function DashboardPage() {
                   )}
                 </ScrollArea>
 
-                {/* Chat Input */}
                 <form onSubmit={handleSendChat} className="p-4 border-t border-primary/20 bg-white">
                   <div className="flex gap-2">
-                    <Input
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Ask about your wedding..."
-                      className="flex-1 border-primary/20"
-                      disabled={isSendingChat || !selectedWeddingId || isComplaintMode}
-                    />
+                    <Input value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Ask about your wedding..." className="flex-1 border-primary/20" disabled={isSendingChat || !selectedWeddingId || isComplaintMode} />
                     <Button type="submit" size="icon" disabled={isSendingChat || !chatInput.trim() || !selectedWeddingId || isComplaintMode} className="bg-primary hover:bg-primary/90">
                       <Send className="w-4 h-4" />
                     </Button>
@@ -893,21 +999,11 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           
-          <Textarea
-            value={vendorComplaintText}
-            onChange={(e) => setVendorComplaintText(e.target.value)}
-            placeholder="e.g., The decorator hasn't arrived yet..."
-            rows={4}
-            className="border-amber-200"
-          />
+          <Textarea value={vendorComplaintText} onChange={(e) => setVendorComplaintText(e.target.value)} placeholder="e.g., The decorator hasn't arrived yet..." rows={4} className="border-amber-200" />
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowVendorComplaintModal(false)}>Cancel</Button>
-            <Button 
-              onClick={submitVendorComplaint} 
-              disabled={!vendorComplaintText.trim() || isSubmittingVendorComplaint}
-              className="bg-amber-600 hover:bg-amber-700"
-            >
+            <Button onClick={submitVendorComplaint} disabled={!vendorComplaintText.trim() || isSubmittingVendorComplaint} className="bg-amber-600 hover:bg-amber-700">
               {isSubmittingVendorComplaint ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
               Send Complaint
             </Button>
