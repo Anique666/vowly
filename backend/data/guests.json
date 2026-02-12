@@ -64,6 +64,32 @@
       ],
       "dietary": "veg",
       "accommodation": true
+    },
+    {
+      "id": "eeb2701e-3bfa-4aef-a741-6c258f1fdcc4",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Priya Sharma",
+      "email": "priya@example.com",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "fac3e5af-80da-4cf7-ab3f-190b81fa1676",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Rajesh Patel",
+      "email": "rajesh@example.com",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "dietary": "jain",
+      "accommodation": false
     }
   ]
 }
