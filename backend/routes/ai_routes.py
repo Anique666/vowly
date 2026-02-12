@@ -1,15 +1,26 @@
 """
-AI routes powered by Groq LLM API.
-Provides endpoints for guest summaries, vendor briefs, chat, and guest day suggestions.
+Unified AI routes powered by Groq LLM API.
+
+Includes:
+1. Health Check
+2. Summarize Guests
+3. Generate Vendor Brief
+4. Host/Guest Chat
+5. Guest Day Suggestions
+6. Ops Agent - Handle Issue
+7. Planner - Set Basic Details
+8. Planner - Search Vendor (AI summarization)
 """
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import Optional, Dict, List
 import os
 import logging
 import json
 from datetime import datetime
+import smtplib
+from email.message import EmailMessage
 
 from groq import Groq
 
@@ -17,140 +28,81 @@ from models.wedding_models import Wedding, Guest, Vendor
 from utils.file_utils import get_from_collection, list_collection
 
 logger = logging.getLogger(__name__)
-
 ai_router = APIRouter(prefix="/api/ai", tags=["AI"])
 
-# ---------------------------------------------------------------------------
-# Groq client – lazy-init so the module can import even if key is missing
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# Groq Setup
+# -------------------------------------------------------------------
+
 _groq_client: Optional[Groq] = None
 GROQ_MODEL = "llama-3.1-8b-instant"
-GROQ_TIMEOUT = 30  # seconds
+GROQ_TIMEOUT = 30
 
+EMAIL_ADDRESS = os.getenv("ALERT_EMAIL")
+EMAIL_PASSWORD = os.getenv("ALERT_EMAIL_PASSWORD")
 
 def _get_groq_client() -> Groq:
-    """Return a cached Groq client, creating it on first call."""
     global _groq_client
     if _groq_client is None:
-        api_key = os.environ.get("GROQ_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
-            raise HTTPException(
-                status_code=503,
-                detail="GROQ_API_KEY environment variable is not set"
-            )
+            raise HTTPException(status_code=503, detail="GROQ_API_KEY not set")
         _groq_client = Groq(api_key=api_key, timeout=GROQ_TIMEOUT)
     return _groq_client
 
-
 def _call_groq(system_prompt: str, user_prompt: str, max_tokens: int = 1024) -> str:
-    """
-    Call Groq chat completion with timeout and error handling.
-    Returns the assistant message content.
-    """
     try:
         client = _get_groq_client()
-        response = client.chat.completions.create(
+        res = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
+            temperature=0.5,
             max_tokens=max_tokens,
-            temperature=0.7,
         )
-        return response.choices[0].message.content
-    except HTTPException:
-        raise
+        return res.choices[0].message.content
     except Exception as e:
-        logger.error(f"Groq API error: {e}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"AI service unavailable: {str(e)}"
-        )
+        logger.error(f"Groq error: {e}")
+        raise HTTPException(status_code=502, detail="AI service unavailable")
 
-
-# ---------------------------------------------------------------------------
-# Helpers – build context strings from data
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# Context Builders
+# -------------------------------------------------------------------
 
 def _wedding_context(wedding: Wedding) -> str:
-    """Build a human-readable summary of a wedding for prompts."""
     lines = [
         f"Wedding: {wedding.name}",
         f"Location: {wedding.location}",
         f"Dates: {wedding.startDate} to {wedding.endDate}",
-        f"Number of days: {len(wedding.days)}",
     ]
     for day in wedding.days:
-        lines.append(f"\n  Day {day.dayIndex + 1} ({day.date}):")
+        lines.append(f"\nDay {day.dayIndex + 1} ({day.date}):")
         for ev in day.events:
-            lines.append(f"    - {ev.name} at {ev.time}, Venue: {ev.venue}")
+            lines.append(f"- {ev.name} at {ev.time}, Venue: {ev.venue}")
     return "\n".join(lines)
-
 
 def _guests_context(guests: list[dict]) -> str:
-    """Build a summary of guest data for prompts."""
-    if not guests:
-        return "No guests have RSVP'd yet."
-    lines = [f"Total guests: {len(guests)}"]
-    dietary_counts: dict[str, int] = {}
-    accommodation_count = 0
-    day_counts: dict[int, int] = {}
-
-    for g in guests:
-        diet = g.get("dietary", "unknown")
-        dietary_counts[diet] = dietary_counts.get(diet, 0) + 1
-        if g.get("accommodation"):
-            accommodation_count += 1
-        for i, attending in enumerate(g.get("attendingDays", [])):
-            if attending:
-                day_counts[i] = day_counts.get(i, 0) + 1
-
-    lines.append(f"Dietary breakdown: {json.dumps(dietary_counts)}")
-    lines.append(f"Accommodation needed: {accommodation_count}")
-    lines.append(f"Guests per day: {json.dumps(day_counts)}")
-
-    lines.append("\nGuest list:")
-    for g in guests:
-        lines.append(
-            f"  - {g['name']} | diet: {g.get('dietary','N/A')} | "
-            f"attending: {g.get('attendingDays',[])} | "
-            f"accommodation: {g.get('accommodation', False)}"
-        )
-    return "\n".join(lines)
-
+    return json.dumps(guests, indent=2) if guests else "No guests yet."
 
 def _vendors_context(vendors: list[dict]) -> str:
-    """Build a summary of vendor data for prompts."""
-    if not vendors:
-        return "No vendors registered yet."
-    lines = [f"Total vendors: {len(vendors)}"]
-    for v in vendors:
-        lines.append(
-            f"  - {v['name']} ({v.get('serviceType','N/A')}) | "
-            f"email: {v.get('email','N/A')} | phone: {v.get('phoneNumber','N/A')} | "
-            f"available days: {v.get('attendingDays',[])} | "
-            f"notes: {v.get('notes','')}"
-        )
-    return "\n".join(lines)
-
+    return json.dumps(vendors, indent=2) if vendors else "No vendors yet."
 
 def _load_wedding_data(wedding_id: str):
-    """Load wedding, guests, and vendors for a given wedding ID."""
     try:
-        wedding_data = get_from_collection('wedding.json', 'weddings', wedding_id)
+        wedding_data = get_from_collection("wedding.json", "weddings", wedding_id)
         wedding = Wedding(**wedding_data)
     except ValueError:
-        raise HTTPException(status_code=404, detail=f"Wedding '{wedding_id}' not found")
+        raise HTTPException(status_code=404, detail="Wedding not found")
 
-    guests = list_collection('guests.json', 'guests', {"weddingId": wedding_id})
-    vendors = list_collection('vendors.json', 'vendors', {"weddingId": wedding_id})
+    guests = list_collection("guests.json", "guests", {"weddingId": wedding_id})
+    vendors = list_collection("vendors.json", "vendors", {"weddingId": wedding_id})
     return wedding, guests, vendors
 
-
-# ---------------------------------------------------------------------------
-# Request / Response models
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# Request Models
+# -------------------------------------------------------------------
 
 class WeddingIdRequest(BaseModel):
     weddingId: str
@@ -158,214 +110,135 @@ class WeddingIdRequest(BaseModel):
 class ChatRequest(BaseModel):
     weddingId: str
     message: str
-    role: str = Field(default="host", description="'host' or 'guest'")
+    role: str = "host"
 
 class GuestDaySuggestionsRequest(BaseModel):
     weddingId: str
-    guestId: Optional[str] = None
-    dayIndex: Optional[int] = None
+    dayIndex: Optional[int] = 0
+
+class OpsIssueRequest(BaseModel):
+    issue: str
+    confirm: Optional[bool] = False
+
+class PlannerSetDetailsRequest(BaseModel):
+    location: str
+    budget: str
+    date: str
+    guests: str
+
+class PlannerSearchRequest(BaseModel):
+    vendor_type: str
 
 class AIResponse(BaseModel):
     result: str
     model: str = GROQ_MODEL
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
+# -------------------------------------------------------------------
+# In-memory Planner State
+# -------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# AI Health Check
-# ---------------------------------------------------------------------------
+wedding_state = {
+    "location": None,
+    "budget": None,
+    "date": None,
+    "guests": None,
+}
+
+# -------------------------------------------------------------------
+# 1️⃣ Health Check
+# -------------------------------------------------------------------
 
 @ai_router.get("/health")
-async def ai_health_check():
-    """Verify Groq API connectivity with a tiny request."""
-    try:
-        client = _get_groq_client()
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[{"role": "user", "content": "Reply with OK"}],
-            max_tokens=5,
-        )
-        reply = response.choices[0].message.content
-        return {
-            "status": "ok",
-            "model": GROQ_MODEL,
-            "test_reply": reply,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"AI health check failed: {e}")
-        raise HTTPException(
-            status_code=503,
-            detail=f"AI service unavailable: {str(e)}"
-        )
+async def ai_health():
+    client = _get_groq_client()
+    res = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[{"role": "user", "content": "Reply OK"}],
+        max_tokens=5,
+    )
+    return {"status": "ok", "model": GROQ_MODEL, "reply": res.choices[0].message.content}
 
-
-# ---------------------------------------------------------------------------
-# POST /api/ai/summarize-guests
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# 2️⃣ Summarize Guests
+# -------------------------------------------------------------------
 
 @ai_router.post("/summarize-guests", response_model=AIResponse)
 async def summarize_guests(req: WeddingIdRequest):
-    """
-    Summarize guest RSVP data for the host dashboard.
-    Returns counts, dietary breakdown, accommodation needs, and insights.
-    """
     wedding, guests, _ = _load_wedding_data(req.weddingId)
-
-    system_prompt = (
-        "You are a wedding planning assistant. Provide a clear, concise summary "
-        "of guest RSVP data for the wedding host. Include key statistics, dietary "
-        "breakdown, accommodation needs, and any notable patterns. "
-        "Format your response with sections and bullet points for readability."
-    )
-
-    user_prompt = (
-        f"Please summarize the guest data for this wedding:\n\n"
-        f"{_wedding_context(wedding)}\n\n"
-        f"Guest Data:\n{_guests_context(guests)}"
-    )
-
-    result = _call_groq(system_prompt, user_prompt, max_tokens=1024)
+    system = "You are a wedding planning assistant."
+    user = f"{_wedding_context(wedding)}\nGuests:\n{_guests_context(guests)}"
+    result = _call_groq(system, user)
     return AIResponse(result=result)
 
-
-# ---------------------------------------------------------------------------
-# POST /api/ai/generate-vendor-brief
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# 3️⃣ Generate Vendor Brief
+# -------------------------------------------------------------------
 
 @ai_router.post("/generate-vendor-brief", response_model=AIResponse)
 async def generate_vendor_brief(req: WeddingIdRequest):
-    """
-    Generate a professional vendor brief document based on wedding, guest, and vendor data.
-    Useful for sending to vendors so they understand requirements.
-    """
     wedding, guests, vendors = _load_wedding_data(req.weddingId)
-
-    system_prompt = (
-        "You are a professional wedding coordinator. Generate a detailed vendor brief "
-        "document that can be shared with all vendors. The brief should include:\n"
-        "1. Wedding overview (name, dates, location, schedule)\n"
-        "2. Guest count per day\n"
-        "3. Dietary requirements breakdown (important for caterers)\n"
-        "4. Accommodation statistics\n"
-        "5. Vendor assignments and availability summary\n"
-        "6. Key logistics and notes\n"
-        "Format it professionally with clear headings and sections."
-    )
-
-    user_prompt = (
-        f"Generate a vendor brief for this wedding:\n\n"
-        f"{_wedding_context(wedding)}\n\n"
-        f"Guest Data:\n{_guests_context(guests)}\n\n"
-        f"Vendor Data:\n{_vendors_context(vendors)}"
-    )
-
-    result = _call_groq(system_prompt, user_prompt, max_tokens=2048)
+    system = "You are a professional wedding coordinator writing a vendor brief."
+    user = f"{_wedding_context(wedding)}\nGuests:\n{_guests_context(guests)}\nVendors:\n{_vendors_context(vendors)}"
+    result = _call_groq(system, user, max_tokens=2048)
     return AIResponse(result=result)
 
-
-# ---------------------------------------------------------------------------
-# POST /api/ai/chat
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# 4️⃣ AI Chat
+# -------------------------------------------------------------------
 
 @ai_router.post("/chat", response_model=AIResponse)
 async def ai_chat(req: ChatRequest):
-    """
-    AI copilot chat for hosts and guests.
-    - Host mode: answer operational questions about the wedding.
-    - Guest mode: answer guest queries about schedule, venues, logistics.
-    """
     wedding, guests, vendors = _load_wedding_data(req.weddingId)
-
-    if req.role == "host":
-        system_prompt = (
-            "You are an AI wedding operations copilot assisting the HOST of a multi-day "
-            "Indian wedding. You have full access to wedding details, guest RSVPs, and "
-            "vendor information. Help the host with operational questions, planning "
-            "decisions, drafting messages to vendors or guests, and any logistics queries. "
-            "Be concise but thorough. If asked to draft a message, make it professional "
-            "and warm."
-        )
-    else:
-        system_prompt = (
-            "You are an AI wedding concierge assisting a GUEST at a multi-day Indian "
-            "wedding. Help the guest with questions about the schedule, venues, dress code, "
-            "what to expect at each event, and general wedding etiquette. Be friendly, "
-            "warm, and helpful. Do NOT reveal private host operational details or other "
-            "guests' personal information."
-        )
-
-    context = f"Wedding Info:\n{_wedding_context(wedding)}\n\n"
-    if req.role == "host":
-        context += f"Guest Data:\n{_guests_context(guests)}\n\n"
-        context += f"Vendor Data:\n{_vendors_context(vendors)}\n\n"
-
-    user_prompt = f"{context}User question: {req.message}"
-
-    result = _call_groq(system_prompt, user_prompt, max_tokens=1024)
+    system = "You are an AI wedding copilot."
+    context = f"{_wedding_context(wedding)}\nGuests:\n{_guests_context(guests)}\nVendors:\n{_vendors_context(vendors)}"
+    result = _call_groq(system, f"{context}\nUser: {req.message}")
     return AIResponse(result=result)
 
-
-# ---------------------------------------------------------------------------
-# POST /api/ai/guest-day-suggestions
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# 5️⃣ Guest Day Suggestions
+# -------------------------------------------------------------------
 
 @ai_router.post("/guest-day-suggestions", response_model=AIResponse)
 async def guest_day_suggestions(req: GuestDaySuggestionsRequest):
-    """
-    Generate activity suggestions for a guest between wedding events.
-    Takes into account venue, time gaps, and local area.
-    """
-    wedding, guests, _ = _load_wedding_data(req.weddingId)
+    wedding, _, _ = _load_wedding_data(req.weddingId)
+    day = wedding.days[req.dayIndex or 0]
+    system = "You are a friendly wedding concierge."
+    user = f"{_wedding_context(wedding)}\nEvents for the day:\n{json.dumps(day.model_dump(), indent=2)}"
+    result = _call_groq(system, user)
+    return AIResponse(result=result)
 
-    # Determine which day to suggest for
-    day_index = req.dayIndex if req.dayIndex is not None else 0
-    if day_index < 0 or day_index >= len(wedding.days):
-        raise HTTPException(
-            status_code=400,
-            detail=f"dayIndex {day_index} is out of range (0-{len(wedding.days) - 1})"
-        )
+# -------------------------------------------------------------------
+# 6️⃣ Ops Agent
+# -------------------------------------------------------------------
 
-    target_day = wedding.days[day_index]
+@ai_router.post("/ops/handle-issue", response_model=Dict)
+async def handle_ops_issue(req: OpsIssueRequest):
+    system = "You are an AI wedding operations coordinator."
+    user = f"Issue: {req.issue}\nReturn JSON with role, priority, action, message."
+    raw = _call_groq(system, user)
+    try:
+        data = json.loads(raw[raw.index("{"):raw.rindex("}")+1])
+        return data
+    except Exception:
+        raise HTTPException(status_code=500, detail="Invalid AI response")
 
-    # Optionally get guest info
-    guest_info = ""
-    if req.guestId:
-        try:
-            guest_data = get_from_collection('guests.json', 'guests', req.guestId)
-            guest = Guest(**guest_data)
-            guest_info = (
-                f"\nGuest: {guest.name} | Dietary: {guest.dietary} | "
-                f"Accommodation: {guest.accommodation}"
-            )
-        except ValueError:
-            guest_info = ""
+# -------------------------------------------------------------------
+# 7️⃣ Planner - Set Details
+# -------------------------------------------------------------------
 
-    # Build event timeline for the day
-    events_text = ""
-    for ev in target_day.events:
-        events_text += f"  - {ev.name} at {ev.time}, Venue: {ev.venue}\n"
+@ai_router.post("/planner/set-details")
+async def planner_set_details(req: PlannerSetDetailsRequest):
+    wedding_state.update(req.model_dump())
+    return {"status": "updated", "state": wedding_state}
 
-    system_prompt = (
-        "You are a friendly AI concierge for a multi-day Indian wedding. "
-        "Suggest activities, rest breaks, and things to do between wedding events. "
-        "Consider the venue/location, time gaps between events, and that guests may "
-        "want to explore the area, rest, or prepare for the next event. "
-        "Give practical, fun, and culturally appropriate suggestions. "
-        "Format as a timeline-style day plan."
-    )
+# -------------------------------------------------------------------
+# 8️⃣ Planner - Search Vendor (AI summary)
+# -------------------------------------------------------------------
 
-    user_prompt = (
-        f"Suggest a day plan for Day {day_index + 1} ({target_day.date}) of this wedding:\n\n"
-        f"Wedding: {wedding.name}\n"
-        f"Location: {wedding.location}\n"
-        f"\nEvents for the day:\n{events_text}"
-        f"{guest_info}\n\n"
-        f"Please suggest what the guest can do between events, including rest time, "
-        f"local activities, preparation tips, and any other helpful suggestions."
-    )
-
-    result = _call_groq(system_prompt, user_prompt, max_tokens=1024)
+@ai_router.post("/planner/search-vendor", response_model=AIResponse)
+async def planner_search_vendor(req: PlannerSearchRequest):
+    system = "You are a wedding planner assistant."
+    user = f"Suggest top 3 {req.vendor_type} options in {wedding_state['location']} with brief summaries."
+    result = _call_groq(system, user)
     return AIResponse(result=result)
