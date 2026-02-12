@@ -55,6 +55,20 @@
         true
       ],
       "notes": "Floral and traditional Indian wedding decorations"
+    },
+    {
+      "id": "fa81a46b-3de9-429a-9bd5-5c50fb9cefff",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Royal Caterers",
+      "serviceType": "catering",
+      "email": "info@royalcaterers.com",
+      "phoneNumber": "+91-9876543210",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "Specializes in North Indian cuisine"
     }
   ]
 }
