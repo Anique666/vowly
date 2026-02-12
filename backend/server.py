@@ -755,14 +755,26 @@ async def send_wedding_invites(request: SendInvitesRequest):
                 logger.info(f"Sent invitation to {guest_email} - Email ID: {email_response.get('id')}")
                 
             except Exception as e:
-                logger.error(f"Failed to send invitation to {guest_email}: {str(e)}")
+                error_str = str(e)
+                logger.error(f"Failed to send invitation to {guest_email}: {error_str}")
                 failed_emails.append(guest_email)
+                # Store the last error for user feedback
+                if "verify a domain" in error_str.lower():
+                    last_error = "Resend sandbox mode: Can only send to verified account email. Verify a domain at resend.com/domains for full access."
+                else:
+                    last_error = error_str[:200]
+        
+        # Build response with helpful error details
+        error_detail = ""
+        if failed_emails and successful_count == 0:
+            error_detail = last_error if 'last_error' in dir() else "Email delivery failed. Check Resend configuration."
         
         return EmailResponse(
             status="success" if successful_count > 0 else "failed",
             message=f"Sent {successful_count} invitation(s) for {wedding.name}",
             emailsSent=successful_count,
-            failed=failed_emails
+            failed=failed_emails,
+            errorDetails=error_detail
         )
         
     except HTTPException:
