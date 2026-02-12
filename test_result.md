@@ -238,10 +238,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "POST /api/wedding/create endpoint"
-    - "POST /api/guest/rsvp endpoint"
     - "/host page - Wedding Setup Form"
     - "/rsvp page - RSVP Form"
+    - "/host page - Invite Guests Section"
+    - "Toast Notifications"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
