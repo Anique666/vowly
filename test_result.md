@@ -103,10 +103,12 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Build /host and /rsvp pages in Next.js frontend:
-  - /host: Form to create wedding (name, location, dates, day-wise events), save via POST /api/wedding/create, invite guests UI with comma-separated emails, call POST /api/email/send-invites
-  - /rsvp: RSVP form (name, email, attending days, dietary, accommodation), submit to POST /api/guest/rsvp
-  - Use shadcn/ui components and Tailwind, gold and white theme
+  Build /dashboard page in Next.js:
+  - Fetch wedding details, guests, and vendors from backend APIs
+  - Display: Day selector, Guest count per day, Dietary breakdown, Accommodation count, Vendor status
+  - Add buttons: "Generate Vendor Brief" → calls /api/ai/generate-vendor-brief, "Draft Vendor Message" → calls /api/ai/chat with context
+  - Add AI chatbot panel: Chat UI, Calls /api/ai/chat
+  - Style using shadcn/ui components
 
 backend:
   - task: "POST /api/wedding/create endpoint"
