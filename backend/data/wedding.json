@@ -758,6 +758,28 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "559260e3-daa6-46fb-b5d7-7f3f9d877993",
+      "name": "Royal Wedding 2026",
+      "location": "Mumbai, India",
+      "startDate": "2026-06-15",
+      "endDate": "2026-06-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-06-15",
+          "events": [
+            {
+              "id": "d0523a7c-61cc-42c3-a220-3f317366a26f",
+              "name": "Mehendi Ceremony",
+              "time": "14:00",
+              "venue": "Palace Garden"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
