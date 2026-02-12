@@ -279,6 +279,20 @@
         true
       ],
       "notes": "No phone contact"
+    },
+    {
+      "id": "364f5660-acf4-46f2-9118-6071cf1eb5b9",
+      "weddingId": "489a30df-1ca9-4beb-bdf5-c2fbc3fcf0ae",
+      "name": "y",
+      "serviceType": "catering",
+      "email": "anishkasetty@gmail.com",
+      "phoneNumber": "9090909090",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": null
     }
   ]
 }

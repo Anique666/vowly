@@ -656,6 +656,52 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "489a30df-1ca9-4beb-bdf5-c2fbc3fcf0ae",
+      "name": "Anish weds Anish",
+      "location": "Bengaluru Palace, Bengaluru",
+      "startDate": "2026-11-16",
+      "endDate": "2026-11-18",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-11-16",
+          "events": [
+            {
+              "id": "a301be0b-d168-4e0a-9e6c-47fcd9c26dff",
+              "name": "Mehandi",
+              "time": "18:00",
+              "venue": "Garden"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-11-17",
+          "events": [
+            {
+              "id": "b226b67c-cdd6-44a3-9ed5-a4a6b56d541d",
+              "name": "M",
+              "time": "10:00",
+              "venue": "Venue"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-11-18",
+          "events": [
+            {
+              "id": "4c994ae9-a325-4924-93a8-866d4b2007fb",
+              "name": "Y",
+              "time": "11:00",
+              "venue": "V2"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
