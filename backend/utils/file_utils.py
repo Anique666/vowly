@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 # In-memory mutex for file access
 file_locks: Dict[str, Lock] = {}
 
-DATA_DIR = Path(__file__).parent / "data"
+# Data directory at backend root level
+DATA_DIR = Path(__file__).parent.parent / "data"
 
 def get_file_lock(filename: str) -> Lock:
     """Get or create a lock for a specific file"""
