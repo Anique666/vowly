@@ -103,9 +103,12 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Build /guestdashboard and /postwedding pages in Next.js:
-  - /guestdashboard: Show today's events, time until next event, AI activity suggestions (/api/ai/guest-day-suggestions), guest chatbot (/api/ai/chat)
-  - /postwedding: Fetch photos from GET /api/photos, display photo gallery grid, loading and empty states
+  UI/UX and feature enhancements for existing Next.js frontend:
+  1. Landing Page Polish - Framer Motion animations, parallax effects, premium design
+  2. /host Page - Dynamic vendors section, Suggest Vendors Near Venue button, improved guest invite flow
+  3. /dashboard Fixes - Floating chatbot button, countdown timer fix, vendor complaint routing, Report Issue per vendor
+  4. /guestdashboard - Improved AI text formatting with ReactMarkdown
+  5. General Polish - Consistent theming, loading states, responsive layout
 
 backend:
   - task: "POST /api/wedding/create endpoint"
