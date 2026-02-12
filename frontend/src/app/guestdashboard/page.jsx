@@ -10,8 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Sparkles, Calendar, Clock, MapPin, Send, 
-  Loader2, Bot, User, X, PanelRightOpen, PanelRightClose,
-  Lightbulb, PartyPopper, Timer
+  Loader2, Bot, User, X, MessageCircle,
+  Lightbulb, PartyPopper, Timer, Rocket
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -92,11 +92,9 @@ export default function GuestDashboardPage() {
       const weddingData = await response.json();
       setWedding(weddingData);
       
-      // Reset states
       setSuggestions('');
       setChatMessages([]);
       
-      // Fetch AI suggestions
       fetchSuggestions(weddingId);
     } catch (err) {
       toast({
@@ -122,45 +120,34 @@ export default function GuestDashboardPage() {
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to get suggestions');
-      }
+      if (!response.ok) throw new Error('Failed to get suggestions');
 
       const data = await response.json();
       setSuggestions(data.result);
     } catch (err) {
       console.error('Failed to fetch suggestions:', err);
-      // Don't show toast for suggestions failure - it's optional
     } finally {
       setIsLoadingSuggestions(false);
     }
   };
 
-  // Get today's date in YYYY-MM-DD format
-  const getTodayDate = () => {
-    return currentTime.toISOString().split('T')[0];
-  };
+  const getTodayDate = () => currentTime.toISOString().split('T')[0];
 
-  // Find which day index matches today
   const getTodayDayIndex = () => {
     if (!wedding?.days) return -1;
     const today = getTodayDate();
     return wedding.days.findIndex(day => day.date === today);
   };
 
-  // Get today's events
   const getTodayEvents = () => {
     if (!wedding?.days) return [];
     const todayIndex = getTodayDayIndex();
     if (todayIndex >= 0) {
       return wedding.days[todayIndex].events || [];
     }
-    // If no match, show first day's events as demo
     return wedding.days[0]?.events || [];
   };
 
-  // Get time until next event
   const getTimeUntilNextEvent = () => {
     const events = getTodayEvents();
     if (events.length === 0) return null;
@@ -187,10 +174,9 @@ export default function GuestDashboardPage() {
       }
     }
 
-    return null; // All events have passed
+    return null;
   };
 
-  // Send chat message
   const handleSendChat = async (e) => {
     e.preventDefault();
     if (!chatInput.trim() || !selectedWeddingId) return;
@@ -211,10 +197,7 @@ export default function GuestDashboardPage() {
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to get response');
-      }
+      if (!response.ok) throw new Error('Failed to get response');
 
       const data = await response.json();
       setChatMessages(prev => [...prev, { role: 'assistant', content: data.result }]);
@@ -241,7 +224,7 @@ export default function GuestDashboardPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold text-foreground">AI Wedding Ops</span>
+            <span className="text-xl font-bold">AI Wedding Ops</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link href="/host" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Host</Link>
@@ -254,7 +237,7 @@ export default function GuestDashboardPage() {
 
       <div className="flex">
         {/* Main Content */}
-        <main className={`flex-1 container mx-auto px-4 py-8 transition-all ${isChatOpen ? 'mr-96' : ''}`}>
+        <main className={`flex-1 container mx-auto px-4 py-8 transition-all duration-300 ${isChatOpen ? 'mr-96' : ''}`}>
           <div className="max-w-4xl mx-auto">
             {/* Title & Wedding Selector */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
@@ -282,9 +265,9 @@ export default function GuestDashboardPage() {
                   variant="outline" 
                   size="icon"
                   onClick={() => setIsChatOpen(!isChatOpen)}
-                  className="border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground"
+                  className={`border-primary/20 transition-all duration-300 ${isChatOpen ? 'bg-primary text-primary-foreground' : 'text-primary hover:bg-primary hover:text-primary-foreground'}`}
                 >
-                  {isChatOpen ? <PanelRightClose className="w-5 h-5" /> : <PanelRightOpen className="w-5 h-5" />}
+                  <MessageCircle className="w-5 h-5" />
                 </Button>
               </div>
             </div>
@@ -293,22 +276,37 @@ export default function GuestDashboardPage() {
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
-            ) : !wedding ? (
-              <Card className="border-2 border-dashed border-primary/30">
+            ) : weddings.length === 0 ? (
+              /* Empty State */
+              <Card className="border-2 border-dashed border-primary/30 animate-fade-in">
                 <CardContent className="py-16 text-center">
-                  <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Wedding Selected</h3>
-                  <p className="text-muted-foreground">Select a wedding to see your schedule</p>
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-amber-100 flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">No Weddings Available</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    There are no weddings to view yet. If you're a host, create one to get started!
+                  </p>
+                  <Link href="/host">
+                    <Button className="gap-2 bg-primary hover:bg-primary/90">
+                      <Rocket className="w-5 h-5" />
+                      Create a Wedding
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
+            ) : !wedding ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
             ) : (
               <>
                 {/* Wedding Info Card */}
-                <Card className="mb-6 border-2 border-primary/20 shadow-lg overflow-hidden">
+                <Card className="mb-6 border-2 border-primary/20 shadow-lg overflow-hidden animate-fade-in">
                   <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-primary/5 p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="text-2xl font-bold text-foreground mb-1">{wedding.name}</h2>
+                        <h2 className="text-2xl font-bold mb-1">{wedding.name}</h2>
                         <p className="text-muted-foreground flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           {wedding.location}
@@ -316,7 +314,7 @@ export default function GuestDashboardPage() {
                       </div>
                       <Badge 
                         variant="secondary" 
-                        className={isWeddingDay ? 'bg-green-100 text-green-700 text-lg px-4 py-1' : 'bg-primary/10 text-primary'}
+                        className={isWeddingDay ? 'bg-green-100 text-green-700 text-lg px-4 py-1 animate-gentle-pulse' : 'bg-primary/10 text-primary'}
                       >
                         {isWeddingDay ? '🎉 Today!' : `${wedding.days?.length || 0} Days`}
                       </Badge>
@@ -326,15 +324,15 @@ export default function GuestDashboardPage() {
 
                 {/* Time Until Next Event */}
                 {nextEventInfo && (
-                  <Card className="mb-6 border-2 border-green-200 bg-gradient-to-r from-green-50 to-white shadow-lg">
+                  <Card className="mb-6 border-2 border-green-200 bg-gradient-to-r from-green-50 to-white shadow-lg animate-fade-in">
                     <CardContent className="py-6">
                       <div className="flex items-center gap-6">
-                        <div className="p-4 bg-green-100 rounded-full">
+                        <div className="p-4 bg-green-100 rounded-full animate-gentle-pulse">
                           <Timer className="w-8 h-8 text-green-600" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm text-muted-foreground mb-1">Next Event</p>
-                          <h3 className="text-xl font-bold text-foreground">{nextEventInfo.event.name}</h3>
+                          <h3 className="text-xl font-bold">{nextEventInfo.event.name}</h3>
                           <p className="text-sm text-muted-foreground">{nextEventInfo.event.venue}</p>
                         </div>
                         <div className="text-right">
@@ -347,7 +345,7 @@ export default function GuestDashboardPage() {
                 )}
 
                 {/* Today's Events */}
-                <Card className="mb-6 border-primary/20 shadow-lg">
+                <Card className="mb-6 border-primary/20 shadow-lg animate-fade-in">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-primary" />
@@ -373,10 +371,10 @@ export default function GuestDashboardPage() {
                               key={index} 
                               className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
                                 isCurrent 
-                                  ? 'bg-primary/10 border-primary shadow-md' 
+                                  ? 'bg-primary/10 border-primary shadow-md animate-gentle-pulse' 
                                   : isPast 
                                     ? 'bg-gray-50 border-gray-200 opacity-60'
-                                    : 'bg-gradient-to-r from-primary/5 to-transparent border-primary/10'
+                                    : 'bg-gradient-to-r from-primary/5 to-transparent border-primary/10 hover:border-primary/20'
                               }`}
                             >
                               <div className="flex flex-col items-center">
@@ -397,7 +395,7 @@ export default function GuestDashboardPage() {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-foreground">{event.name}</h4>
+                                <h4 className="font-semibold">{event.name}</h4>
                                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                                   <MapPin className="w-3 h-3" />
                                   {event.venue}
@@ -417,7 +415,7 @@ export default function GuestDashboardPage() {
                 </Card>
 
                 {/* AI Activity Suggestions */}
-                <Card className="border-2 border-primary/20 shadow-lg">
+                <Card className="border-2 border-primary/20 shadow-lg animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
                     <CardTitle className="flex items-center gap-2">
                       <Lightbulb className="w-5 h-5 text-primary" />
@@ -432,10 +430,8 @@ export default function GuestDashboardPage() {
                         <span className="text-muted-foreground">Getting suggestions...</span>
                       </div>
                     ) : suggestions ? (
-                      <div className="prose prose-sm max-w-none">
-                        <div className="p-4 bg-gradient-to-r from-amber-50 to-white rounded-lg border border-primary/10">
-                          <pre className="whitespace-pre-wrap text-sm font-sans text-foreground">{suggestions}</pre>
-                        </div>
+                      <div className="p-4 bg-gradient-to-r from-amber-50 to-white rounded-lg border border-primary/10">
+                        <pre className="whitespace-pre-wrap text-sm font-sans">{suggestions}</pre>
                       </div>
                     ) : (
                       <div className="text-center py-8">
@@ -459,7 +455,7 @@ export default function GuestDashboardPage() {
 
         {/* Chat Panel */}
         <div 
-          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-primary/20 shadow-2xl transform transition-transform duration-300 z-40 ${
+          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-primary/20 shadow-2xl z-40 transition-chat ${
             isChatOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           style={{ top: '73px', height: 'calc(100vh - 73px)' }}
@@ -469,33 +465,33 @@ export default function GuestDashboardPage() {
             <div className="p-4 border-b border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">Wedding Concierge</h3>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-amber-400 flex items-center justify-center animate-float">
+                    <span className="text-sm">🤵</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">Wedding Concierge</h3>
+                    <p className="text-xs text-muted-foreground">Ask me anything!</p>
+                  </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsChatOpen(false)}
-                  className="h-8 w-8"
-                >
+                <Button variant="ghost" size="icon" onClick={() => setIsChatOpen(false)} className="h-8 w-8">
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Ask me anything about the wedding!</p>
             </div>
 
             {/* Chat Messages */}
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4 chat-scrollbar">
               {chatMessages.length === 0 ? (
                 <div className="text-center py-8">
-                  <Bot className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground text-sm">How can I help you today?</p>
-                  <div className="mt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">Try asking:</p>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary/20 to-amber-100 flex items-center justify-center animate-float">
+                    <span className="text-2xl">🤵</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4">How can I help you today?</p>
+                  <div className="space-y-2">
                     {[
-                      "What should I wear to the ceremony?",
-                      "Where is the venue located?",
-                      "What time does the reception start?",
+                      "What should I wear?",
+                      "Where is the venue?",
+                      "What's the dress code?",
                     ].map((suggestion, i) => (
                       <button
                         key={i}
@@ -512,20 +508,20 @@ export default function GuestDashboardPage() {
                   {chatMessages.map((msg, index) => (
                     <div 
                       key={index} 
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex animate-bubble-in ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div className={`flex items-start gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-primary/20 to-amber-100'
                         }`}>
-                          {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                          {msg.role === 'user' ? <User className="w-4 h-4" /> : <span className="text-xs">🤵</span>}
                         </div>
                         <div className={`p-3 rounded-lg ${
                           msg.role === 'user' 
                             ? 'bg-primary text-primary-foreground' 
                             : msg.isError 
                               ? 'bg-red-50 border border-red-200 text-red-700'
-                              : 'bg-gray-100 text-foreground'
+                              : 'bg-gray-100'
                         }`}>
                           <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                         </div>
@@ -533,10 +529,10 @@ export default function GuestDashboardPage() {
                     </div>
                   ))}
                   {isSendingChat && (
-                    <div className="flex justify-start">
+                    <div className="flex justify-start animate-bubble-in">
                       <div className="flex items-start gap-2">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/10 text-primary">
-                          <Bot className="w-4 h-4" />
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-amber-100 flex items-center justify-center">
+                          <span className="text-xs">🤵</span>
                         </div>
                         <div className="p-3 rounded-lg bg-gray-100">
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -572,6 +568,16 @@ export default function GuestDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Floating Chat Button when panel is closed */}
+      {!isChatOpen && (
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-amber-400 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center z-40 animate-float"
+        >
+          <MessageCircle className="w-6 h-6 text-white" />
+        </button>
+      )}
     </div>
   );
 }
