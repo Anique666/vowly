@@ -1,0 +1,17 @@
+{
+  "guests": [
+    {
+      "id": "ac39efe4-46f3-4433-879e-998c98308d17",
+      "weddingId": "0b936780-7926-4e99-ac13-17e269130cd6",
+      "name": "Priya Sharma",
+      "email": "priya@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    }
+  ]
+}
