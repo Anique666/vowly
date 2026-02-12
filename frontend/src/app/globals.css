@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,27 +7,27 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 5%;
+    --foreground: 150 10% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
+    --card-foreground: 150 10% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
-    --primary: 43 96% 56%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 98%;
-    --secondary-foreground: 43 96% 56%;
-    --muted: 0 0% 98%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 43 96% 95%;
-    --accent-foreground: 43 96% 56%;
+    --popover-foreground: 150 10% 15%;
+    --primary: 153 50% 18%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 90 20% 96%;
+    --secondary-foreground: 153 50% 18%;
+    --muted: 90 10% 96%;
+    --muted-foreground: 150 5% 45%;
+    --accent: 90 30% 95%;
+    --accent-foreground: 153 50% 18%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 43 50% 88%;
-    --input: 43 30% 92%;
-    --ring: 43 96% 56%;
-    --radius: 0.5rem;
+    --border: 150 10% 90%;
+    --input: 150 10% 94%;
+    --ring: 153 50% 18%;
+    --radius: 0.75rem;
     
-    --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
   }
 }
@@ -41,37 +41,134 @@
     font-family: var(--font-sans);
   }
   
-  /* Elegant serif headings for wedding theme */
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
-    @apply tracking-tight;
+    @apply tracking-tight font-medium;
   }
   
   .font-serif {
     font-family: var(--font-serif);
   }
+  
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+}
+
+/* Botanical template specific styles */
+@layer components {
+  /* Primary button - dark green with rounded corners */
+  .btn-botanical {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-[hsl(var(--primary))] text-white font-medium rounded-full transition-all duration-300 hover:bg-[hsl(153,50%,14%)] hover:shadow-lg;
+  }
+  
+  /* Secondary/outline button */
+  .btn-botanical-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-medium rounded-full transition-all duration-300 hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))];
+  }
+  
+  /* Pill toggle buttons */
+  .pill-toggle {
+    @apply inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-full transition-all duration-200;
+  }
+  
+  .pill-toggle-active {
+    @apply bg-[hsl(var(--primary))] text-white;
+  }
+  
+  .pill-toggle-inactive {
+    @apply bg-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))];
+  }
+  
+  /* Card styles */
+  .card-botanical {
+    @apply bg-white border border-[hsl(var(--border))] rounded-2xl p-6 transition-all duration-300;
+  }
+  
+  .card-botanical-hover {
+    @apply hover:shadow-xl hover:-translate-y-1 hover:border-[hsl(var(--primary)/0.3)];
+  }
+  
+  /* Section styles */
+  .section-botanical {
+    @apply py-20 md:py-28;
+  }
+  
+  /* Label styles */
+  .label-botanical {
+    @apply text-xs uppercase tracking-widest text-[hsl(var(--muted-foreground))] font-medium;
+  }
+  
+  /* Large serif heading */
+  .heading-botanical {
+    @apply text-4xl md:text-5xl lg:text-6xl font-serif font-normal leading-tight;
+  }
+  
+  /* Italic accent text */
+  .heading-botanical-italic {
+    @apply italic;
+  }
+  
+  /* Input styles matching template */
+  .input-botanical {
+    @apply w-full px-4 py-3 border border-[hsl(var(--border))] rounded-xl bg-white text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)] focus:border-[hsl(var(--primary))] transition-all duration-200;
+  }
+  
+  /* Select styles */
+  .select-botanical {
+    @apply w-full px-4 py-3 border border-[hsl(var(--border))] rounded-xl bg-white text-[hsl(var(--foreground))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)] focus:border-[hsl(var(--primary))] transition-all duration-200 appearance-none cursor-pointer;
+  }
 }
 
 /* Animations */
 @layer utilities {
-  /* Float animation for avatars */
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
+  /* Smooth fade in up */
+  @keyframes fade-in-up {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
   }
   
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
   }
   
-  /* Fade in animation */
+  /* Stagger delay utilities */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  
+  /* Smooth fade in */
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
   .animate-fade-in {
     animation: fade-in 0.5s ease-out forwards;
+  }
+  
+  /* Gentle scale in */
+  @keyframes scale-in {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
+  
+  .animate-scale-in {
+    animation: scale-in 0.4s ease-out forwards;
   }
   
   /* Slide in from right */
@@ -94,10 +191,10 @@
     animation: slide-out-right 0.3s ease-out forwards;
   }
   
-  /* Countdown number animation */
+  /* Countdown animation */
   @keyframes countdown-tick {
     0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    50% { transform: scale(1.02); }
     100% { transform: scale(1); }
   }
   
@@ -105,7 +202,7 @@
     animation: countdown-tick 1s ease-in-out infinite;
   }
   
-  /* Gentle pulse for highlights */
+  /* Gentle pulse */
   @keyframes gentle-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
@@ -115,11 +212,11 @@
     animation: gentle-pulse 2s ease-in-out infinite;
   }
   
-  /* Chat bubble appearance */
+  /* Chat bubble animation */
   @keyframes bubble-in {
     from { 
       opacity: 0; 
-      transform: scale(0.8) translateY(10px); 
+      transform: scale(0.9) translateY(10px); 
     }
     to { 
       opacity: 1; 
@@ -131,27 +228,55 @@
     animation: bubble-in 0.3s ease-out forwards;
   }
   
-  /* Shimmer effect for loading */
+  /* Shimmer loading effect */
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
   
   .animate-shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, #f5f5f5 25%, #e8e8e8 50%, #f5f5f5 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+  }
+  
+  /* Float animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 }
 
 /* Transition utilities */
 @layer utilities {
-  .transition-chat {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  .transition-botanical {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-/* Custom scrollbar for chat */
+/* Custom scrollbar */
+.botanical-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.botanical-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.botanical-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--primary) / 0.2);
+  border-radius: 3px;
+}
+
+.botanical-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--primary) / 0.4);
+}
+
+/* Chat scrollbar */
 .chat-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
