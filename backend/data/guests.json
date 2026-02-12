@@ -12,6 +12,45 @@
       ],
       "dietary": "veg",
       "accommodation": true
+    },
+    {
+      "id": "51b2e5d8-b55f-4b96-bcb3-f1cf43d4e388",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "name": "Amit Patel",
+      "email": "amit@example.com",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "dietary": "vegan",
+      "accommodation": true
+    },
+    {
+      "id": "3ba70c9a-64c3-443c-a4e1-1d2b0ac59a1c",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "name": "Sarah Johnson",
+      "email": "sarah@example.com",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "dietary": "non-veg",
+      "accommodation": false
+    },
+    {
+      "id": "da079a0a-1055-445b-9876-2eb6c38f46d1",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "name": "Rajesh Kumar",
+      "email": "rajesh@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "jain",
+      "accommodation": true
     }
   ]
 }

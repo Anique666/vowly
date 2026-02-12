@@ -13,6 +13,48 @@
         true
       ],
       "notes": "Specializes in North Indian cuisine"
+    },
+    {
+      "id": "588e69b2-64af-4292-a284-5fca737ff417",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "name": "Maharaja Caterers",
+      "serviceType": "catering",
+      "email": "info@maharajacaterers.com",
+      "phoneNumber": "+91-9876543210",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "Specializes in royal Rajasthani cuisine"
+    },
+    {
+      "id": "6717eb9a-c7d6-4531-84cf-676148df12ef",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "name": "Dream Photography",
+      "serviceType": "photography",
+      "email": "contact@dreamphotos.com",
+      "phoneNumber": "+91-9876543211",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Professional wedding photography and videography"
+    },
+    {
+      "id": "3c953e4c-a059-4698-ab06-9d1a09ae19be",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "name": "Flower Power Decorations",
+      "serviceType": "decoration",
+      "email": "info@flowerpower.com",
+      "phoneNumber": "+91-9876543212",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Floral and traditional Indian wedding decorations"
     }
   ]
 }

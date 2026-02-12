@@ -1,3 +1,13 @@
 {
-  "photos": []
+  "photos": [
+    {
+      "id": "361993b0-91b4-4664-aace-7fcb195495c7",
+      "weddingId": "2028e07a-8224-4667-9619-d08586468e89",
+      "dayIndex": 1,
+      "eventId": null,
+      "url": "https://example.com/photos/sangeet-night.jpg",
+      "caption": "Beautiful moments from Sangeet Night",
+      "uploadedAt": "2026-02-12T15:27:49.233883"
+    }
+  ]
 }
