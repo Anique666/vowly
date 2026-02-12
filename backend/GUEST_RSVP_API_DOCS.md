@@ -101,7 +101,7 @@ The Guest RSVP API provides endpoints for guests to register their attendance fo
 
 **Example Request:**
 ```
-GET /api/guest/list?weddingId=f887960a-acd2-49e3-adcc-7b30b25632d3
+GET /api/guest/list?weddingId=celebrate-together-6
 ```
 
 **Success Response:** `200 OK`
@@ -224,7 +224,7 @@ curl -X POST http://localhost:8001/api/guest/rsvp \
 
 **List All Guests for Wedding:**
 ```bash
-curl "http://localhost:8001/api/guest/list?weddingId=f887960a-acd2-49e3-adcc-7b30b25632d3"
+curl "http://localhost:8001/api/guest/list?weddingId=celebrate-together-6"
 ```
 
 **Test Email Validation:**

@@ -104,7 +104,7 @@ The Vendor API provides endpoints for vendors to register their availability for
 
 **Example Request:**
 ```
-GET /api/vendor/list?weddingId=f887960a-acd2-49e3-adcc-7b30b25632d3
+GET /api/vendor/list?weddingId=celebrate-together-6
 ```
 
 **Success Response:** `200 OK`
@@ -237,7 +237,7 @@ curl -X POST http://localhost:8001/api/vendor/respond \
 
 **List All Vendors for Wedding:**
 ```bash
-curl "http://localhost:8001/api/vendor/list?weddingId=f887960a-acd2-49e3-adcc-7b30b25632d3"
+curl "http://localhost:8001/api/vendor/list?weddingId=celebrate-together-6"
 ```
 
 **Test Email Validation:**
