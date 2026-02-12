@@ -122,9 +122,9 @@ class OpsIssueRequest(BaseModel):
 
 class PlannerSetDetailsRequest(BaseModel):
     location: str
-    budget: str
-    date: str
-    guests: str
+    budget: Optional[str] = None
+    date: Optional[str] = None
+    guests: Optional[str] = None
 
 class PlannerSearchRequest(BaseModel):
     vendor_type: str
