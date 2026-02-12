@@ -58,18 +58,18 @@ export default function Home() {
           <div className="text-center mb-16 sm:mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
               <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Ready for Hackathons</span>
+              <span className="text-sm font-medium text-primary">Perfect for Weddings</span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight">
-              Next.js 14 + FastAPI
+              Wedding Management
               <br />
-              <span className="text-primary">Starter Template</span>
+              <span className="text-primary">Made Simple</span>
             </h1>
             
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Modern, fast, and production-ready starter template with TypeScript, 
-              Tailwind CSS, shadcn/ui, and FastAPI backend.
+              Complete wedding planning platform with Next.js 14, TypeScript, 
+              and FastAPI. Manage guests, vendors, events, and more.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4">
