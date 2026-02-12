@@ -90,6 +90,123 @@
       ],
       "dietary": "jain",
       "accommodation": false
+    },
+    {
+      "id": "163802d1-0ab0-4853-ba50-d7cde7a54616",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Amit Kumar",
+      "email": "amit@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "8d719188-e7e3-481c-bc58-f93171877ee6",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Guest Without Email",
+      "email": null,
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "42f0a47f-4a37-48a9-a633-eafff4e32224",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Priya Sharma",
+      "email": "priya@example.com",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "91a5f27f-a6f7-4944-b47b-72fba73e1d6f",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Rajesh Patel",
+      "email": "rajesh@example.com",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "dietary": "jain",
+      "accommodation": false
+    },
+    {
+      "id": "ae935fcd-c6e6-4d5f-9ee1-cc04cd009f18",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Sarah Johnson",
+      "email": "sarah@example.com",
+      "attendingDays": [
+        true,
+        false,
+        true
+      ],
+      "dietary": "non-veg",
+      "accommodation": true
+    },
+    {
+      "id": "48bd4126-0f76-4a18-9439-4fd7c57116f9",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Dietary Test 1",
+      "email": "dietary1@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": false
+    },
+    {
+      "id": "b9f0e2ff-8b8e-41e3-b1ee-755abbef1952",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Dietary Test 2",
+      "email": "dietary2@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "non-veg",
+      "accommodation": false
+    },
+    {
+      "id": "1d75653e-f3c3-46ed-a2a8-71bb23285357",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Dietary Test 3",
+      "email": "dietary3@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "jain",
+      "accommodation": false
+    },
+    {
+      "id": "b686ca04-f621-4963-98e6-a8d6c457d5d5",
+      "weddingId": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Dietary Test 4",
+      "email": "dietary4@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "vegan",
+      "accommodation": false
     }
   ]
 }

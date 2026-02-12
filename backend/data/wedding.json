@@ -370,6 +370,52 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "6453c75e-9d84-4baa-ba59-688558352ad1",
+      "name": "Guest RSVP Test Wedding",
+      "location": "Test Venue",
+      "startDate": "2026-11-01",
+      "endDate": "2026-11-03",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-11-01",
+          "events": [
+            {
+              "id": "d0334e5e-05be-47cb-8a7a-c34357e62cfe",
+              "name": "Welcome",
+              "time": "18:00",
+              "venue": "Garden"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-11-02",
+          "events": [
+            {
+              "id": "2c1231c0-9d1f-4054-9fa7-4b1e27c4a9f9",
+              "name": "Ceremony",
+              "time": "16:00",
+              "venue": "Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-11-03",
+          "events": [
+            {
+              "id": "4abc3e1f-0cb3-46b2-99f6-866167319b6d",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Ballroom"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
