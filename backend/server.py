@@ -98,18 +98,71 @@ async def get_status_checks():
 # WEDDING MANAGEMENT ENDPOINTS
 # ============================================================================
 
-# Wedding Endpoints
-@api_router.post("/weddings", response_model=Wedding)
+# Wedding Endpoints with Validation
+@api_router.post("/wedding/create", response_model=Wedding, status_code=201)
 async def create_wedding(wedding_data: WeddingCreate):
-    """Create a new wedding"""
+    """
+    Create a new wedding with validation:
+    - Wedding name is required
+    - At least one day required
+    - At least one event required
+    """
     try:
+        # Validation: Check wedding name
+        if not wedding_data.name or not wedding_data.name.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Wedding name is required"
+            )
+        
+        # Validation: Check at least one day
+        if not wedding_data.days or len(wedding_data.days) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one day is required"
+            )
+        
+        # Validation: Check at least one event across all days
+        total_events = sum(len(day.events) for day in wedding_data.days)
+        if total_events == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one event is required"
+            )
+        
+        # Create wedding object
         wedding = Wedding(**wedding_data.model_dump())
         result = append_to_collection('wedding.json', 'weddings', wedding.model_dump())
-        logger.info(f"Created wedding: {wedding.id}")
+        logger.info(f"Created wedding: {wedding.id} - {wedding.name}")
+        
         return Wedding(**result)
+        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating wedding: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@api_router.get("/wedding/{wedding_id}", response_model=Wedding)
+async def get_wedding_by_id(wedding_id: str):
+    """Get a specific wedding by ID with proper error handling"""
+    try:
+        wedding = get_from_collection('wedding.json', 'weddings', wedding_id)
+        return Wedding(**wedding)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Wedding with id '{wedding_id}' not found"
+        )
+    except Exception as e:
+        logger.error(f"Error getting wedding: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# Keep existing wedding endpoints for compatibility
+@api_router.post("/weddings", response_model=Wedding)
+async def create_wedding_legacy(wedding_data: WeddingCreate):
+    """Legacy endpoint - redirects to /wedding/create"""
+    return await create_wedding(wedding_data)
 
 @api_router.get("/weddings", response_model=List[Wedding])
 async def list_weddings():
