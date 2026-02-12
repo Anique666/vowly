@@ -277,6 +277,54 @@ frontend:
         agent: "main"
         comment: "Theme configured with primary color as gold (hsl 43 96% 56%)"
 
+  - task: "/guestdashboard page - Guest Dashboard"
+    implemented: true
+    working: true
+    file: "frontend/src/app/guestdashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented with today's events, time until next event countdown, AI activity suggestions from /api/ai/guest-day-suggestions, and guest chatbot calling /api/ai/chat"
+
+  - task: "/guestdashboard page - AI Activity Suggestions"
+    implemented: true
+    working: true
+    file: "frontend/src/app/guestdashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Calls /api/ai/guest-day-suggestions with dayIndex, displays personalized recommendations for guests"
+
+  - task: "/guestdashboard page - Guest Chatbot"
+    implemented: true
+    working: true
+    file: "frontend/src/app/guestdashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Slide-in chat panel calling /api/ai/chat with role='guest', includes suggestion prompts"
+
+  - task: "/postwedding page - Photo Gallery"
+    implemented: true
+    working: true
+    file: "frontend/src/app/postwedding/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fetches photos from GET /api/photos?wedding_id={id}, displays responsive grid gallery with lightbox, loading and empty states"
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
