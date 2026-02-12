@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import uuid
 
 # Backend configuration
-BACKEND_URL = "https://vendor-hub-148.preview.emergentagent.com/api"
+BACKEND_URL = "https://wedding-ops-fix.preview.emergentagent.com/api"
 
 class WeddingAPITester:
     def __init__(self):
