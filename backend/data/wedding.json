@@ -324,6 +324,52 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Test RSVP Wedding",
+      "location": "Mumbai",
+      "startDate": "2026-10-15",
+      "endDate": "2026-10-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-10-15",
+          "events": [
+            {
+              "id": "43d15548-39de-421f-9888-f5f1b816d5d1",
+              "name": "Welcome",
+              "time": "18:00",
+              "venue": "Garden"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-10-16",
+          "events": [
+            {
+              "id": "780aa160-ae78-4b72-806d-1e04e4e631e5",
+              "name": "Ceremony",
+              "time": "16:00",
+              "venue": "Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-10-17",
+          "events": [
+            {
+              "id": "8ee60ae2-03e4-4a67-ae97-500fa9e6a175",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Ballroom"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
