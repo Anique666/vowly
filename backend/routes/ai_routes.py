@@ -229,7 +229,9 @@ async def handle_ops_issue(req: OpsIssueRequest):
 
 @ai_router.post("/planner/set-details")
 async def planner_set_details(req: PlannerSetDetailsRequest):
-    wedding_state.update(req.model_dump())
+    # Only update fields that are provided
+    update_data = {k: v for k, v in req.model_dump().items() if v is not None}
+    wedding_state.update(update_data)
     return {"status": "updated", "state": wedding_state}
 
 # -------------------------------------------------------------------
