@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,6 +9,22 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 import uuid
 from datetime import datetime, timezone
+
+# Import wedding models and utilities
+from models.wedding_models import (
+    Wedding, WeddingCreate,
+    Guest, GuestCreate,
+    Vendor, VendorCreate,
+    Photo, PhotoCreate
+)
+from utils.file_utils import (
+    read_json_file,
+    append_to_collection,
+    update_in_collection,
+    delete_from_collection,
+    get_from_collection,
+    list_collection
+)
 
 
 ROOT_DIR = Path(__file__).parent
