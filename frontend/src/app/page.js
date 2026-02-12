@@ -2,11 +2,10 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { CheckCircle2, Activity, Rocket, Sparkles, Calendar, Users, MessageCircle, Heart, ArrowRight, Star, Zap } from 'lucide-react';
+import { ArrowRight, Calendar, Users, MessageCircle, Zap, CheckCircle2, Activity } from 'lucide-react';
 import Link from 'next/link';
-import { ShaadiBot } from '@/components/onboarding/ShaadiBot';
+import { BotanicalHeader, BotanicalFooter } from '@/components/botanical/Layout';
+import { Card } from '@/components/ui/card';
 
 // Animation variants
 const fadeInUp = {
@@ -14,29 +13,16 @@ const fadeInUp = {
   visible: { opacity: 1, y: 0 }
 };
 
-const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 }
-};
-
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2
-    }
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 }
   }
 };
 
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1 }
-};
-
-// Feature card component with animations
-function FeatureCard({ feature, index }) {
+// Service card component
+function ServiceCard({ title, description, features, index }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
@@ -47,35 +33,30 @@ function FeatureCard({ feature, index }) {
       animate={isInView ? "visible" : "hidden"}
       variants={fadeInUp}
       transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="card-botanical card-botanical-hover"
     >
-      <Card className="p-6 h-full border-2 border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl group hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
-        <motion.div 
-          className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-amber-100 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300"
-          whileHover={{ rotate: 5 }}
-        >
-          <feature.icon className="w-7 h-7 text-primary" />
-        </motion.div>
-        <h3 className="text-xl font-semibold mb-3 font-serif">{feature.title}</h3>
-        <p className="text-muted-foreground leading-relaxed">
-          {feature.description}
-        </p>
-      </Card>
+      <h3 className="text-xl font-serif font-medium mb-3">{title}</h3>
+      <p className="text-muted-foreground text-sm leading-relaxed mb-4">{description}</p>
+      <ul className="space-y-2">
+        {features.map((feature, i) => (
+          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            {feature}
+          </li>
+        ))}
+      </ul>
     </motion.div>
   );
 }
 
 export default function Home() {
-  const [healthStatus, setHealthStatus] = useState({
-    frontend: true,
-    backend: false,
-  });
+  const [healthStatus, setHealthStatus] = useState({ frontend: true, backend: false });
   const [loading, setLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [activeTab, setActiveTab] = useState('hosts');
 
-  // Parallax scroll effects
   const { scrollY } = useScroll();
-  const heroY = useTransform(scrollY, [0, 500], [0, 150]);
-  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroScale = useTransform(scrollY, [0, 400], [1, 0.95]);
 
   useEffect(() => {
     checkBackendHealth();
@@ -87,149 +68,97 @@ export default function Home() {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
       const response = await fetch(`${backendUrl}/api/health`);
       const data = await response.json();
-      
-      setHealthStatus({
-        frontend: true,
-        backend: response.ok,
-        backendMessage: data.message,
-      });
+      setHealthStatus({ frontend: true, backend: response.ok, backendMessage: data.message });
     } catch (error) {
-      setHealthStatus({
-        frontend: true,
-        backend: false,
-        backendMessage: 'Unable to connect',
-      });
+      setHealthStatus({ frontend: true, backend: false, backendMessage: 'Unable to connect' });
     } finally {
       setLoading(false);
     }
   };
 
-  const features = [
+  const services = [
     {
-      icon: Calendar,
       title: 'Multi-Day Planning',
-      description: 'Organize Mehendi, Sangeet, Wedding & Reception with comprehensive day-wise schedules and event management.',
+      description: 'Organize every ceremony from Mehendi to Reception with detailed day-wise schedules.',
+      features: ['Event scheduling', 'Timeline management'],
     },
     {
-      icon: Users,
-      title: 'Smart Guest Management',
-      description: 'Track RSVPs, dietary preferences, and accommodation needs with real-time updates and notifications.',
+      title: 'Guest Management',
+      description: 'Track RSVPs, dietary preferences, and accommodation with real-time updates.',
+      features: ['RSVP tracking', 'Dietary preferences'],
     },
     {
-      icon: MessageCircle,
-      title: 'AI-Powered Assistant',
-      description: 'Get instant help with vendor coordination, guest queries, and day-of operations with Aarav, your AI copilot.',
+      title: 'AI Assistant',
+      description: 'Get intelligent help with planning, vendor coordination, and day-of operations.',
+      features: ['Smart suggestions', '24/7 availability'],
     },
-    {
-      icon: Zap,
-      title: 'Vendor Coordination',
-      description: 'Manage all your vendors in one place with AI-suggested professionals and automated communication.',
-    },
-  ];
-
-  const stats = [
-    { value: '500+', label: 'Weddings Planned' },
-    { value: '10k+', label: 'Happy Guests' },
-    { value: '98%', label: 'Satisfaction Rate' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-amber-50/30 to-white overflow-hidden">
-      {/* Onboarding */}
-      <ShaadiBot 
-        showOnboarding={showOnboarding} 
-        onDismiss={() => setShowOnboarding(false)} 
-      />
+    <div className="min-h-screen bg-white">
+      <BotanicalHeader />
 
-      {/* Header */}
-      <motion.header 
-        className="border-b border-primary/20 bg-white/80 backdrop-blur-md sticky top-0 z-50"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <motion.div 
-            className="flex items-center gap-2"
-            whileHover={{ scale: 1.02 }}
-          >
-            <Sparkles className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold font-serif">AI Wedding Ops</span>
-          </motion.div>
-          <nav className="flex items-center gap-6">
-            <Link href="/host" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Host</Link>
-            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Dashboard</Link>
-            <Link href="/guestdashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Guest</Link>
-            <Link href="/rsvp" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">RSVP</Link>
-          </nav>
-        </div>
-      </motion.header>
-
-      {/* Hero Section with Parallax */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background decorations */}
-        <motion.div 
-          className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"
-          style={{ y: heroY }}
-        />
-        <motion.div 
-          className="absolute bottom-20 left-10 w-96 h-96 bg-amber-100/50 rounded-full blur-3xl"
-          style={{ y: useTransform(scrollY, [0, 500], [0, -100]) }}
-        />
-        
-        <div className="container mx-auto px-4 py-20 relative z-10">
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center pt-20">
+        <div className="max-w-7xl mx-auto px-6 w-full">
           <motion.div 
             className="max-w-4xl mx-auto text-center"
-            style={{ opacity: heroOpacity }}
+            style={{ opacity: heroOpacity, scale: heroScale }}
           >
-            {/* Aarav Introduction */}
+            {/* Toggle Tabs */}
             <motion.div 
-              className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/10 to-amber-100/50 border border-primary/20 mb-8"
+              className="inline-flex items-center bg-secondary rounded-full p-1 mb-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <motion.div 
-                className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-amber-400 flex items-center justify-center"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+              <button
+                onClick={() => setActiveTab('hosts')}
+                className={`pill-toggle ${activeTab === 'hosts' ? 'pill-toggle-active' : 'pill-toggle-inactive'}`}
               >
-                <span className="text-sm">🤵</span>
-              </motion.div>
-              <span className="text-sm font-medium text-foreground">
-                Meet <strong>Aarav</strong>, your AI Wedding Assistant
-              </span>
-              <Sparkles className="w-4 h-4 text-primary" />
+                For Hosts
+              </button>
+              <button
+                onClick={() => setActiveTab('guests')}
+                className={`pill-toggle ${activeTab === 'guests' ? 'pill-toggle-active' : 'pill-toggle-inactive'}`}
+              >
+                For Guests
+              </button>
             </motion.div>
 
             {/* Main Heading */}
             <motion.h1 
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6 tracking-tight font-serif"
+              className="heading-botanical mb-6"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
-              Your Dream Wedding,
-              <br />
-              <motion.span 
-                className="text-primary inline-block"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, delay: 0.5 }}
-              >
-                Effortlessly Planned
-              </motion.span>
+              {activeTab === 'hosts' ? (
+                <>
+                  Create your perfect
+                  <br />
+                  <span className="heading-botanical-italic">wedding celebration.</span>
+                </>
+              ) : (
+                <>
+                  Celebrate with
+                  <br />
+                  <span className="heading-botanical-italic">ease and joy.</span>
+                </>
+              )}
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p 
-              className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+              className="text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
             >
-              Plan your perfect Indian wedding celebration with AI-powered assistance. 
-              Manage guests, vendors, and multi-day events seamlessly in one beautiful platform.
+              {activeTab === 'hosts' 
+                ? 'Plan your dream Indian wedding with AI-powered assistance. Manage guests, vendors, and multi-day events in one elegant platform.'
+                : 'RSVP with ease, view event schedules, and stay connected with every celebration detail at your fingertips.'
+              }
             </motion.p>
 
             {/* CTA Buttons */}
@@ -237,31 +166,26 @@ export default function Home() {
               className="flex flex-wrap items-center justify-center gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <Link href="/host">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    size="lg" 
-                    className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 text-base px-8 py-6 rounded-xl"
-                  >
-                    <Rocket className="w-5 h-5" />
-                    Create Your Wedding Ops Hub
-                    <ArrowRight className="w-5 h-5 ml-1" />
-                  </Button>
-                </motion.div>
+              <Link href={activeTab === 'hosts' ? '/host' : '/rsvp'}>
+                <motion.button
+                  className="btn-botanical text-base px-8 py-4"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {activeTab === 'hosts' ? 'Start Planning' : 'Submit RSVP'}
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
               </Link>
-              <Link href="/dashboard">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    size="lg" 
-                    variant="outline"
-                    className="gap-2 border-2 border-primary/30 hover:bg-primary/5 hover:border-primary transition-all duration-300 text-base px-8 py-6 rounded-xl"
-                  >
-                    <Activity className="w-5 h-5" />
-                    View Dashboard
-                  </Button>
-                </motion.div>
+              <Link href={activeTab === 'hosts' ? '/dashboard' : '/guestdashboard'}>
+                <motion.button
+                  className="btn-botanical-outline text-base px-8 py-4"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {activeTab === 'hosts' ? 'View Dashboard' : 'Guest Portal'}
+                </motion.button>
               </Link>
             </motion.div>
           </motion.div>
@@ -269,174 +193,223 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <motion.div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <div className="w-6 h-10 border-2 border-primary/30 rounded-full flex justify-center pt-2">
+          <div className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center pt-2">
             <motion.div 
-              className="w-1.5 h-3 bg-primary/50 rounded-full"
-              animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+              className="w-1 h-2.5 bg-muted-foreground/50 rounded-full"
+              animate={{ y: [0, 10, 0], opacity: [1, 0.3, 1] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
           </div>
         </motion.div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gradient-to-r from-primary/5 via-amber-50/50 to-primary/5">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="grid grid-cols-3 gap-8 max-w-3xl mx-auto"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
-            {stats.map((stat, index) => (
-              <motion.div 
-                key={index}
-                className="text-center"
-                variants={scaleIn}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="text-4xl font-bold text-primary font-serif mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
+      {/* Label Section */}
+      <section className="py-6 border-y border-border bg-secondary/30">
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="label-botanical text-center">Our Features</p>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
+      {/* Services Section */}
+      <section className="section-botanical">
+        <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             className="text-center mb-16"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
-            transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 font-serif">
-              Everything You Need for the Perfect Day
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-normal mb-4">
+              Curated planning tools for
+              <br />
+              <span className="italic">every celebration.</span>
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto text-lg">
-              From planning to celebration, our platform handles every detail with elegance
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              From intimate gatherings to grand celebrations, we provide everything you need.
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {features.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} index={index} />
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {services.map((service, index) => (
+              <ServiceCard key={index} {...service} index={index} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Health Status Section - Compact */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
+      {/* Plans Section */}
+      <section className="section-botanical bg-secondary/30">
+        <div className="max-w-7xl mx-auto px-6">
           <motion.div 
-            className="max-w-xl mx-auto"
+            className="text-center mb-16"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ duration: 0.5 }}
+            variants={fadeInUp}
           >
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="p-4 border border-border bg-white/80">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-green-100">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Frontend</p>
-                    <p className="text-xs text-muted-foreground">Running</p>
-                  </div>
-                </div>
-              </Card>
+            <h2 className="text-3xl md:text-4xl font-serif font-normal mb-4">
+              Experience tailored to you
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Whether you&apos;re hosting or attending, we have you covered.
+            </p>
+          </motion.div>
 
-              <Card className={`p-4 border bg-white/80 ${healthStatus.backend ? 'border-border' : 'border-red-200'}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${healthStatus.backend ? 'bg-green-100' : 'bg-red-100'}`}>
-                    {healthStatus.backend ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Activity className="w-4 h-4 text-red-600" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Backend</p>
-                    <p className="text-xs text-muted-foreground">
-                      {loading ? 'Checking...' : (healthStatus.backend ? 'Running' : 'Disconnected')}
-                    </p>
-                  </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Host Card */}
+            <motion.div
+              className="card-botanical card-botanical-hover"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <h3 className="text-xl font-serif font-medium mb-2">For Hosts</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Full control over your wedding planning with AI assistance.
+              </p>
+              <ul className="space-y-2 mb-6">
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Complete event management
+                </li>
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  AI-powered vendor suggestions
+                </li>
+              </ul>
+              <Link href="/host">
+                <button className="btn-botanical w-full justify-center">
+                  Start Planning
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </Link>
+            </motion.div>
+
+            {/* Guest Card */}
+            <motion.div
+              className="card-botanical card-botanical-hover relative"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="absolute -top-3 right-4">
+                <span className="text-xs bg-primary text-white px-3 py-1 rounded-full font-medium">
+                  Popular
+                </span>
+              </div>
+              <h3 className="text-xl font-serif font-medium mb-2">For Guests</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Easy RSVP and event information at your fingertips.
+              </p>
+              <ul className="space-y-2 mb-6">
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Simple RSVP process
+                </li>
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Real-time schedule updates
+                </li>
+              </ul>
+              <Link href="/rsvp">
+                <button className="btn-botanical-outline w-full justify-center">
+                  Submit RSVP
+                </button>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Status Section */}
+      <section className="py-12">
+        <div className="max-w-xl mx-auto px-6">
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="p-4 border border-border bg-white">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-green-50">
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
                 </div>
-              </Card>
+                <div>
+                  <p className="text-sm font-medium">Frontend</p>
+                  <p className="text-xs text-muted-foreground">Running</p>
+                </div>
+              </div>
+            </Card>
+            <Card className={`p-4 border bg-white ${healthStatus.backend ? 'border-border' : 'border-red-200'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-full ${healthStatus.backend ? 'bg-green-50' : 'bg-red-50'}`}>
+                  {healthStatus.backend ? (
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Activity className="w-4 h-4 text-red-600" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Backend</p>
+                  <p className="text-xs text-muted-foreground">
+                    {loading ? 'Checking...' : (healthStatus.backend ? 'Running' : 'Disconnected')}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="section-botanical">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div 
+            className="max-w-2xl mx-auto text-center"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <p className="label-botanical mb-4">Get Started</p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-normal mb-6">
+              Let&apos;s plan something
+              <br />
+              <span className="italic">beautiful together.</span>
+            </h2>
+            <p className="text-muted-foreground mb-10 max-w-md mx-auto">
+              Whether you&apos;re planning an intimate ceremony or a grand celebration, we&apos;re here to help make it perfect.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Link href="/host">
+                <motion.button
+                  className="btn-botanical text-base px-8 py-4"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Create Your Wedding
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </Link>
+              <Link href="/dashboard">
+                <motion.button
+                  className="btn-botanical-outline text-base px-8 py-4"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  View Demo
+                </motion.button>
+              </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="max-w-3xl mx-auto"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={scaleIn}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="p-10 border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-amber-50/50 to-primary/5 text-center relative overflow-hidden">
-              {/* Background decoration */}
-              <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-amber-100/50 rounded-full blur-3xl" />
-              
-              <div className="relative z-10">
-                <motion.div 
-                  className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-amber-400 flex items-center justify-center"
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  <span className="text-2xl">🤵</span>
-                </motion.div>
-                <h3 className="text-3xl font-bold mb-4 font-serif">Ready to Create Magic?</h3>
-                <p className="text-muted-foreground mb-8 text-lg max-w-lg mx-auto">
-                  Let Aarav guide you through creating your perfect wedding celebration. 
-                  Start your journey today.
-                </p>
-                <Link href="/host">
-                  <motion.div 
-                    className="inline-block"
-                    whileHover={{ scale: 1.05 }} 
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90 text-lg px-10 py-6 rounded-xl">
-                      <Sparkles className="w-5 h-5" />
-                      Get Started Now
-                      <ArrowRight className="w-5 h-5" />
-                    </Button>
-                  </motion.div>
-                </Link>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 border-t border-primary/10">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            © 2026 AI Wedding Ops. Crafted with ❤️ for beautiful celebrations.
-          </p>
-        </div>
-      </footer>
+      <BotanicalFooter />
     </div>
   );
 }
