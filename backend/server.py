@@ -858,9 +858,53 @@ async def send_thankyou_emails(request: SendThankYouRequest):
         raise HTTPException(status_code=500, detail=f"Failed to send thank you emails: {str(e)}")
 
 
+# ============================================================================
+# PHOTO FILE SERVING
+# ============================================================================
+
+UPLOAD_DIR = ROOT_DIR / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+@api_router.get("/photos/file/{wedding_id}/{filename}")
+async def serve_photo_file(wedding_id: str, filename: str):
+    """
+    Serve uploaded photo files.
+    
+    Path: /api/photos/file/{wedding_id}/{filename}
+    """
+    file_path = UPLOAD_DIR / wedding_id / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Photo file not found")
+    
+    # Security: ensure we're not serving files outside upload dir
+    try:
+        file_path.resolve().relative_to(UPLOAD_DIR.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Determine media type
+    ext = filename.lower().split('.')[-1] if '.' in filename else 'jpg'
+    media_types = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp'
+    }
+    media_type = media_types.get(ext, 'image/jpeg')
+    
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        headers={"Cache-Control": "public, max-age=86400"}  # Cache for 1 day
+    )
+
+
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(ai_router)
+app.include_router(photo_router)
 
 app.add_middleware(
     CORSMiddleware,
