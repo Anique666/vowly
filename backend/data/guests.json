@@ -259,6 +259,19 @@
       ],
       "dietary": "veg",
       "accommodation": true
+    },
+    {
+      "id": "6d3c9fd4-884e-4ee3-9fb1-d7dd45c6a151",
+      "weddingId": "6e9c7ee4-57b8-4446-a2d7-82da832aae1f",
+      "name": "Test Guest",
+      "email": "test@example.com",
+      "attendingDays": [
+        true,
+        false,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": false
     }
   ]
 }

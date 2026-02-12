@@ -610,6 +610,52 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "6e9c7ee4-57b8-4446-a2d7-82da832aae1f",
+      "name": "Edge Case Wedding",
+      "location": "Test Location",
+      "startDate": "2026-09-01",
+      "endDate": "2026-09-03",
+      "days": [
+        {
+          "dayIndex": 1,
+          "date": "2026-09-01",
+          "events": [
+            {
+              "id": "fd240ccd-7964-4aaf-87ad-7aadf1d2eeb7",
+              "name": "Day 1 Event",
+              "time": "10:00",
+              "venue": "Venue 1"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-09-02",
+          "events": [
+            {
+              "id": "f860f100-a433-481d-81d7-b0c791ebe760",
+              "name": "Day 2 Event",
+              "time": "11:00",
+              "venue": "Venue 2"
+            }
+          ]
+        },
+        {
+          "dayIndex": 3,
+          "date": "2026-09-03",
+          "events": [
+            {
+              "id": "98efeaca-be68-44c8-9bc1-9d4c6e0d63b4",
+              "name": "Day 3 Event",
+              "time": "12:00",
+              "venue": "Venue 3"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
