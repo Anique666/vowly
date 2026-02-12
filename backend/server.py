@@ -545,6 +545,7 @@ class EmailResponse(BaseModel):
     message: str
     emailsSent: int
     failed: List[str] = Field(default_factory=list)
+    errorDetails: str = ""
 
 def create_invite_email_html(wedding: Wedding, guest_email: str) -> str:
     """Create HTML content for wedding invitation email"""
