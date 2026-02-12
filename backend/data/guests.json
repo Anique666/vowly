@@ -51,6 +51,19 @@
       ],
       "dietary": "jain",
       "accommodation": true
+    },
+    {
+      "id": "a6b0f25f-5a7b-4995-a958-ba1c56aefd9f",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Amit Kumar",
+      "email": "amit@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
     }
   ]
 }
