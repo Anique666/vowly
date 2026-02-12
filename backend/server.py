@@ -40,7 +40,10 @@ db = client[os.environ['DB_NAME']]
 
 # Resend API configuration
 resend.api_key = os.environ.get('RESEND_API_KEY', 're_dummy_key')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+# Use Resend's sandbox domain for testing - works without domain verification
+# For production, use a verified domain email
+_env_sender = os.environ.get('SENDER_EMAIL', '')
+SENDER_EMAIL = 'onboarding@resend.dev' if not _env_sender or '@gmail' in _env_sender or '@yahoo' in _env_sender else _env_sender
 
 # Create the main app without a prefix
 app = FastAPI()
