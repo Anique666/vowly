@@ -208,6 +208,122 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "47df2845-b90f-4724-a6f9-4eed540604a1",
+      "name": "Beautiful Royal Wedding",
+      "location": "Jaipur Palace, Rajasthan",
+      "startDate": "2026-09-15",
+      "endDate": "2026-09-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-09-15",
+          "events": [
+            {
+              "id": "1b38f898-3f04-448a-8b7c-35d84bea7538",
+              "name": "Mehendi Ceremony",
+              "time": "16:00",
+              "venue": "Garden Terrace"
+            },
+            {
+              "id": "edff3ad2-03a7-4a92-829d-e22e72a49378",
+              "name": "Sangeet Night",
+              "time": "20:00",
+              "venue": "Grand Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-09-16",
+          "events": [
+            {
+              "id": "c66906c3-fb1d-48e0-8ddc-c1f84f85594b",
+              "name": "Haldi Ceremony",
+              "time": "09:00",
+              "venue": "Poolside"
+            },
+            {
+              "id": "b74b1c04-1353-47fc-bec8-65bc4c47b706",
+              "name": "Wedding Ceremony",
+              "time": "18:00",
+              "venue": "Palace Courtyard"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-09-17",
+          "events": [
+            {
+              "id": "81541e11-2226-433a-b2a1-24afe902adc3",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Royal Banquet Hall"
+            }
+          ]
+        }
+      ],
+      "vendors": []
+    },
+    {
+      "id": "c3bf8980-c0c3-4551-8c03-4fa34b0179f8",
+      "name": "Beautiful Royal Wedding",
+      "location": "Jaipur Palace, Rajasthan",
+      "startDate": "2026-09-15",
+      "endDate": "2026-09-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-09-15",
+          "events": [
+            {
+              "id": "3eaacb44-2106-4a8e-9216-6ccbb53b4a80",
+              "name": "Mehendi Ceremony",
+              "time": "16:00",
+              "venue": "Garden Terrace"
+            },
+            {
+              "id": "aaa835f8-333a-4cb4-8776-a12bde4f9716",
+              "name": "Sangeet Night",
+              "time": "20:00",
+              "venue": "Grand Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-09-16",
+          "events": [
+            {
+              "id": "b963f97d-4e4f-46db-b7ca-688376737c5f",
+              "name": "Haldi Ceremony",
+              "time": "09:00",
+              "venue": "Poolside"
+            },
+            {
+              "id": "d07cabed-7487-4057-91d3-f2bd47de80b4",
+              "name": "Wedding Ceremony",
+              "time": "18:00",
+              "venue": "Palace Courtyard"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-09-17",
+          "events": [
+            {
+              "id": "8c65f66d-76bf-447e-925d-d8b15686e78c",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Royal Banquet Hall"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
