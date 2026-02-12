@@ -462,6 +462,52 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "f50d4016-064b-47c9-94e9-2cd410239d27",
+      "name": "Email Test Wedding",
+      "location": "Test Venue, City",
+      "startDate": "2027-01-15",
+      "endDate": "2027-01-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2027-01-15",
+          "events": [
+            {
+              "id": "155d492f-5741-4152-84b2-a25097ab3a9f",
+              "name": "Welcome Dinner",
+              "time": "19:00",
+              "venue": "Restaurant"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2027-01-16",
+          "events": [
+            {
+              "id": "7eb67189-5e9e-4934-a36f-566b66a2af55",
+              "name": "Wedding Ceremony",
+              "time": "16:00",
+              "venue": "Main Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2027-01-17",
+          "events": [
+            {
+              "id": "5c3c73e1-7e57-4dc7-a253-b8fcaad2e4e5",
+              "name": "Reception",
+              "time": "18:00",
+              "venue": "Ballroom"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }

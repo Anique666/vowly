@@ -207,6 +207,45 @@
       ],
       "dietary": "vegan",
       "accommodation": false
+    },
+    {
+      "id": "470cb34c-c5c8-4868-aa63-0594280671df",
+      "weddingId": "f50d4016-064b-47c9-94e9-2cd410239d27",
+      "name": "Alice Smith",
+      "email": "alice@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "b00d5f5b-a487-44d3-91e1-f2c44f80f72f",
+      "weddingId": "f50d4016-064b-47c9-94e9-2cd410239d27",
+      "name": "Bob Johnson",
+      "email": "bob@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "6205974a-9bf6-4c37-b536-e155876534bb",
+      "weddingId": "f50d4016-064b-47c9-94e9-2cd410239d27",
+      "name": "Charlie Brown",
+      "email": "charlie@example.com",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "dietary": "veg",
+      "accommodation": true
     }
   ]
 }
