@@ -9,14 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Sparkles, Calendar, Users, Utensils, Home, Send, 
   FileText, MessageCircle, ChevronRight, Loader2,
-  UserCheck, UserX, Bot, User, X, PanelRightOpen, PanelRightClose
+  UserCheck, Bot, User, X, PanelRightOpen, PanelRightClose,
+  AlertTriangle, Edit, CheckCircle, Rocket
 } from 'lucide-react';
 import Link from 'next/link';
+import { CountdownTimer } from '@/components/countdown/CountdownTimer';
 
 export default function DashboardPage() {
   const { toast } = useToast();
@@ -44,6 +46,12 @@ export default function DashboardPage() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [isSendingChat, setIsSendingChat] = useState(false);
+
+  // Vendor Complaint State
+  const [isComplaintMode, setIsComplaintMode] = useState(false);
+  const [complaintText, setComplaintText] = useState('');
+  const [draftedComplaint, setDraftedComplaint] = useState('');
+  const [isEditingDraft, setIsEditingDraft] = useState(false);
 
   // Fetch all weddings on mount
   useEffect(() => {
@@ -86,7 +94,6 @@ export default function DashboardPage() {
   const fetchWeddingData = async (weddingId) => {
     setIsLoadingData(true);
     try {
-      // Fetch wedding, guests, and vendors in parallel
       const [weddingRes, guestsRes, vendorsRes] = await Promise.all([
         fetch(`${backendUrl}/api/wedding/${weddingId}`),
         fetch(`${backendUrl}/api/guest/list?weddingId=${weddingId}`),
@@ -103,8 +110,6 @@ export default function DashboardPage() {
       setGuests(guestsData);
       setVendors(vendorsData);
       setSelectedDayIndex(0);
-      
-      // Reset AI states
       setVendorBrief('');
       setVendorMessage('');
       setChatMessages([]);
@@ -223,6 +228,86 @@ export default function DashboardPage() {
     }
   };
 
+  // Handle vendor complaint
+  const handleStartComplaint = () => {
+    setIsComplaintMode(true);
+    setComplaintText('');
+    setDraftedComplaint('');
+    setIsEditingDraft(false);
+  };
+
+  const handleSubmitComplaint = async () => {
+    if (!complaintText.trim() || !selectedWeddingId) return;
+
+    setIsSendingChat(true);
+    setChatMessages(prev => [...prev, { 
+      role: 'user', 
+      content: `🚨 Issue: ${complaintText}`,
+      isComplaint: true 
+    }]);
+
+    try {
+      const response = await fetch(`${backendUrl}/api/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          weddingId: selectedWeddingId,
+          message: `I need to report an issue to a vendor. The problem is: "${complaintText}". Please draft a professional but firm message I can send to address this issue.`,
+          role: 'host'
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to draft complaint');
+
+      const data = await response.json();
+      setDraftedComplaint(data.result);
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.result,
+        isDraft: true,
+        actions: ['edit', 'send']
+      }]);
+      setIsComplaintMode(false);
+      setComplaintText('');
+    } catch (err) {
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I couldn\'t draft that message. Please try again.',
+        isError: true 
+      }]);
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
+  const handleEditDraft = () => {
+    setIsEditingDraft(true);
+  };
+
+  const handleSaveDraft = () => {
+    setIsEditingDraft(false);
+    setChatMessages(prev => prev.map((msg, i) => 
+      i === prev.length - 1 && msg.isDraft 
+        ? { ...msg, content: draftedComplaint }
+        : msg
+    ));
+    toast({
+      title: 'Draft Updated',
+      description: 'Your message has been updated.',
+    });
+  };
+
+  const handleSendToVendor = () => {
+    toast({
+      title: 'Message Ready!',
+      description: 'Copy the message above and send it to your vendor via email or WhatsApp.',
+    });
+    setChatMessages(prev => [...prev, { 
+      role: 'system', 
+      content: '✅ Message ready to send! Copy and paste to your vendor.',
+    }]);
+  };
+
   // Send chat message
   const handleSendChat = async (e) => {
     e.preventDefault();
@@ -257,11 +342,6 @@ export default function DashboardPage() {
         content: 'Sorry, I encountered an error. Please try again.',
         isError: true 
       }]);
-      toast({
-        title: 'Chat Error',
-        description: err.message || 'Failed to get AI response.',
-        variant: 'destructive',
-      });
     } finally {
       setIsSendingChat(false);
     }
@@ -277,22 +357,23 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold text-foreground">AI Wedding Ops</span>
+            <span className="text-xl font-bold">AI Wedding Ops</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link href="/host" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Host</Link>
             <Link href="/dashboard" className="text-sm font-medium text-primary">Dashboard</Link>
-            <Link href="/rsvp" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">RSVP</Link>
+            <Link href="/guestdashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Guest</Link>
+            <Link href="/postwedding" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Photos</Link>
           </nav>
         </div>
       </header>
 
       <div className="flex">
         {/* Main Content */}
-        <main className={`flex-1 container mx-auto px-4 py-8 transition-all ${isChatOpen ? 'mr-96' : ''}`}>
+        <main className={`flex-1 container mx-auto px-4 py-8 transition-all duration-300 ${isChatOpen ? 'mr-96' : ''}`}>
           <div className="max-w-6xl mx-auto">
             {/* Title & Wedding Selector */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Wedding Dashboard</h1>
                 <p className="text-muted-foreground">Manage your wedding, guests, and vendors</p>
@@ -314,7 +395,7 @@ export default function DashboardPage() {
                   variant="outline" 
                   size="icon"
                   onClick={() => setIsChatOpen(!isChatOpen)}
-                  className="border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground"
+                  className={`border-primary/20 transition-all duration-300 ${isChatOpen ? 'bg-primary text-primary-foreground' : 'text-primary hover:bg-primary hover:text-primary-foreground'}`}
                 >
                   {isChatOpen ? <PanelRightClose className="w-5 h-5" /> : <PanelRightOpen className="w-5 h-5" />}
                 </Button>
@@ -325,25 +406,40 @@ export default function DashboardPage() {
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
-            ) : !wedding ? (
-              <Card className="border-2 border-dashed border-primary/30">
+            ) : weddings.length === 0 ? (
+              /* Empty State - No weddings */
+              <Card className="border-2 border-dashed border-primary/30 animate-fade-in">
                 <CardContent className="py-16 text-center">
-                  <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Wedding Selected</h3>
-                  <p className="text-muted-foreground mb-4">Create a wedding or select one to view the dashboard</p>
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-amber-100 flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">No Weddings Yet</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Create your first wedding to start managing guests, vendors, and events with AI assistance.
+                  </p>
                   <Link href="/host">
-                    <Button className="bg-primary hover:bg-primary/90">Create Wedding</Button>
+                    <Button className="gap-2 bg-primary hover:bg-primary/90">
+                      <Rocket className="w-5 h-5" />
+                      Create Your Wedding
+                    </Button>
                   </Link>
                 </CardContent>
               </Card>
+            ) : !wedding ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
             ) : (
               <>
+                {/* Countdown Timer */}
+                <CountdownTimer wedding={wedding} className="mb-6" />
+
                 {/* Wedding Info Card */}
-                <Card className="mb-6 border-2 border-primary/20 shadow-lg">
+                <Card className="mb-6 border-2 border-primary/20 shadow-lg animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-2xl text-foreground">{wedding.name}</CardTitle>
+                        <CardTitle className="text-2xl">{wedding.name}</CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-1">
                           <span>{wedding.location}</span>
                           <span>•</span>
@@ -369,7 +465,7 @@ export default function DashboardPage() {
                         <TabsTrigger 
                           key={index} 
                           value={index.toString()}
-                          className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+                          className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2 transition-all"
                         >
                           <Calendar className="w-4 h-4 mr-2" />
                           Day {index + 1} - {day.date}
@@ -378,11 +474,10 @@ export default function DashboardPage() {
                     </TabsList>
 
                     {wedding.days.map((day, index) => (
-                      <TabsContent key={index} value={index.toString()} className="mt-6">
+                      <TabsContent key={index} value={index.toString()} className="mt-6 animate-fade-in">
                         {/* Stats Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                          {/* Guest Count */}
-                          <Card className="border-primary/20">
+                          <Card className="border-primary/20 hover:shadow-md transition-shadow">
                             <CardContent className="pt-6">
                               <div className="flex items-center gap-4">
                                 <div className="p-3 bg-primary/10 rounded-full">
@@ -390,7 +485,7 @@ export default function DashboardPage() {
                                 </div>
                                 <div>
                                   <p className="text-sm text-muted-foreground">Guests Attending</p>
-                                  <p className="text-2xl font-bold text-foreground">
+                                  <p className="text-2xl font-bold">
                                     {stats?.attending || 0}
                                     <span className="text-sm font-normal text-muted-foreground">/{stats?.total || 0}</span>
                                   </p>
@@ -399,8 +494,7 @@ export default function DashboardPage() {
                             </CardContent>
                           </Card>
 
-                          {/* Dietary Breakdown */}
-                          <Card className="border-primary/20">
+                          <Card className="border-primary/20 hover:shadow-md transition-shadow">
                             <CardContent className="pt-6">
                               <div className="flex items-center gap-4">
                                 <div className="p-3 bg-green-100 rounded-full">
@@ -411,20 +505,13 @@ export default function DashboardPage() {
                                   <div className="flex flex-wrap gap-1">
                                     <Badge variant="outline" className="text-xs">Veg: {stats?.dietaryBreakdown?.veg || 0}</Badge>
                                     <Badge variant="outline" className="text-xs">Non-Veg: {stats?.dietaryBreakdown?.['non-veg'] || 0}</Badge>
-                                    {(stats?.dietaryBreakdown?.jain || 0) > 0 && (
-                                      <Badge variant="outline" className="text-xs">Jain: {stats?.dietaryBreakdown?.jain}</Badge>
-                                    )}
-                                    {(stats?.dietaryBreakdown?.vegan || 0) > 0 && (
-                                      <Badge variant="outline" className="text-xs">Vegan: {stats?.dietaryBreakdown?.vegan}</Badge>
-                                    )}
                                   </div>
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
 
-                          {/* Accommodation */}
-                          <Card className="border-primary/20">
+                          <Card className="border-primary/20 hover:shadow-md transition-shadow">
                             <CardContent className="pt-6">
                               <div className="flex items-center gap-4">
                                 <div className="p-3 bg-blue-100 rounded-full">
@@ -432,14 +519,13 @@ export default function DashboardPage() {
                                 </div>
                                 <div>
                                   <p className="text-sm text-muted-foreground">Need Accommodation</p>
-                                  <p className="text-2xl font-bold text-foreground">{stats?.needAccommodation || 0}</p>
+                                  <p className="text-2xl font-bold">{stats?.needAccommodation || 0}</p>
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
 
-                          {/* Vendor Status */}
-                          <Card className="border-primary/20">
+                          <Card className="border-primary/20 hover:shadow-md transition-shadow">
                             <CardContent className="pt-6">
                               <div className="flex items-center gap-4">
                                 <div className="p-3 bg-purple-100 rounded-full">
@@ -448,13 +534,8 @@ export default function DashboardPage() {
                                 <div>
                                   <p className="text-sm text-muted-foreground">Vendors</p>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-2xl font-bold text-foreground">{vendorStats.confirmed}</span>
+                                    <span className="text-2xl font-bold">{vendorStats.confirmed}</span>
                                     <span className="text-sm text-green-600">confirmed</span>
-                                    {vendorStats.pending > 0 && (
-                                      <Badge variant="secondary" className="bg-amber-100 text-amber-700">
-                                        {vendorStats.pending} pending
-                                      </Badge>
-                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -474,7 +555,7 @@ export default function DashboardPage() {
                             <div className="space-y-3">
                               {day.events && day.events.length > 0 ? (
                                 day.events.map((event, eventIndex) => (
-                                  <div key={eventIndex} className="flex items-center gap-4 p-3 bg-gradient-to-r from-primary/5 to-transparent rounded-lg border border-primary/10">
+                                  <div key={eventIndex} className="flex items-center gap-4 p-3 bg-gradient-to-r from-primary/5 to-transparent rounded-lg border border-primary/10 hover:border-primary/20 transition-colors">
                                     <Badge className="bg-primary text-primary-foreground">{event.time}</Badge>
                                     <div className="flex-1">
                                       <p className="font-medium">{event.name}</p>
@@ -484,7 +565,7 @@ export default function DashboardPage() {
                                   </div>
                                 ))
                               ) : (
-                                <p className="text-muted-foreground text-center py-4">No events scheduled for this day</p>
+                                <p className="text-muted-foreground text-center py-4">No events scheduled</p>
                               )}
                             </div>
                           </CardContent>
@@ -506,7 +587,7 @@ export default function DashboardPage() {
                     {vendors.length > 0 ? (
                       <div className="space-y-3">
                         {vendors.map((vendor, index) => (
-                          <div key={vendor.id || index} className="flex items-center justify-between p-3 bg-white border border-primary/10 rounded-lg">
+                          <div key={vendor.id || index} className="flex items-center justify-between p-3 bg-white border border-primary/10 rounded-lg hover:border-primary/20 transition-colors">
                             <div className="flex items-center gap-3">
                               <div className={`w-3 h-3 rounded-full ${vendor.attendingDays?.some(d => d) ? 'bg-green-500' : 'bg-amber-400'}`} />
                               <div>
@@ -514,17 +595,12 @@ export default function DashboardPage() {
                                 <p className="text-sm text-muted-foreground">{vendor.serviceType}</p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {vendor.email && (
-                                <Badge variant="outline" className="text-xs">{vendor.email}</Badge>
-                              )}
-                              <Badge 
-                                variant={vendor.attendingDays?.some(d => d) ? 'default' : 'secondary'}
-                                className={vendor.attendingDays?.some(d => d) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}
-                              >
-                                {vendor.attendingDays?.some(d => d) ? 'Confirmed' : 'Pending'}
-                              </Badge>
-                            </div>
+                            <Badge 
+                              variant={vendor.attendingDays?.some(d => d) ? 'default' : 'secondary'}
+                              className={vendor.attendingDays?.some(d => d) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}
+                            >
+                              {vendor.attendingDays?.some(d => d) ? 'Confirmed' : 'Pending'}
+                            </Badge>
                           </div>
                         ))}
                       </div>
@@ -544,7 +620,6 @@ export default function DashboardPage() {
                     <CardDescription>Use AI to generate briefs and draft messages</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-6">
-                    {/* Action Buttons */}
                     <div className="flex flex-wrap gap-4">
                       <Button 
                         onClick={handleGenerateVendorBrief}
@@ -552,15 +627,9 @@ export default function DashboardPage() {
                         className="bg-primary hover:bg-primary/90"
                       >
                         {isGeneratingBrief ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Generating...
-                          </>
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
                         ) : (
-                          <>
-                            <FileText className="w-4 h-4 mr-2" />
-                            Generate Vendor Brief
-                          </>
+                          <><FileText className="w-4 h-4 mr-2" />Generate Vendor Brief</>
                         )}
                       </Button>
                       
@@ -571,22 +640,15 @@ export default function DashboardPage() {
                         className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                       >
                         {isDraftingMessage ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Drafting...
-                          </>
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Drafting...</>
                         ) : (
-                          <>
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Draft Vendor Message
-                          </>
+                          <><MessageCircle className="w-4 h-4 mr-2" />Draft Vendor Message</>
                         )}
                       </Button>
                     </div>
 
-                    {/* Vendor Brief Output */}
                     {vendorBrief && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 animate-fade-in">
                         <Label className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
                           Generated Vendor Brief
@@ -597,9 +659,8 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    {/* Vendor Message Output */}
                     {vendorMessage && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 animate-fade-in">
                         <Label className="flex items-center gap-2">
                           <MessageCircle className="w-4 h-4" />
                           Drafted Vendor Message
@@ -616,9 +677,9 @@ export default function DashboardPage() {
           </div>
         </main>
 
-        {/* Chat Panel - Slide-in from right */}
+        {/* Chat Panel */}
         <div 
-          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-primary/20 shadow-2xl transform transition-transform duration-300 z-40 ${
+          className={`fixed top-0 right-0 h-full w-96 bg-white border-l border-primary/20 shadow-2xl z-40 transition-chat ${
             isChatOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           style={{ top: '73px', height: 'calc(100vh - 73px)' }}
@@ -628,46 +689,87 @@ export default function DashboardPage() {
             <div className="p-4 border-b border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">AI Wedding Assistant</h3>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-amber-400 flex items-center justify-center">
+                    <span className="text-sm">🤵</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">Aarav - Host Assistant</h3>
+                    <p className="text-xs text-muted-foreground">AI Wedding Copilot</p>
+                  </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsChatOpen(false)}
-                  className="h-8 w-8"
-                >
+                <Button variant="ghost" size="icon" onClick={() => setIsChatOpen(false)} className="h-8 w-8">
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Ask me anything about your wedding</p>
             </div>
 
+            {/* Quick Actions */}
+            <div className="p-3 border-b border-primary/10 bg-amber-50/50">
+              <p className="text-xs text-muted-foreground mb-2">Quick Actions</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-start gap-2 text-amber-700 border-amber-300 hover:bg-amber-100"
+                onClick={handleStartComplaint}
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Report Issue to Vendor
+              </Button>
+            </div>
+
+            {/* Complaint Input */}
+            {isComplaintMode && (
+              <div className="p-4 border-b border-primary/10 bg-red-50 animate-fade-in">
+                <p className="text-sm font-medium text-red-700 mb-2">Describe the issue:</p>
+                <Textarea
+                  value={complaintText}
+                  onChange={(e) => setComplaintText(e.target.value)}
+                  placeholder="e.g., Caterer is late by 30 minutes"
+                  className="mb-2 border-red-200 focus:border-red-400"
+                  rows={2}
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    onClick={handleSubmitComplaint}
+                    disabled={!complaintText.trim() || isSendingChat}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isSendingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Draft Message'}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => setIsComplaintMode(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Chat Messages */}
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4 chat-scrollbar">
               {chatMessages.length === 0 ? (
                 <div className="text-center py-8">
-                  <Bot className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground text-sm">Start a conversation about your wedding!</p>
-                  <div className="mt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">Try asking:</p>
-                    <div className="space-y-1">
-                      {[
-                        "What's the guest count for each day?",
-                        "Summarize dietary requirements",
-                        "What vendors need confirmation?",
-                      ].map((suggestion, i) => (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            setChatInput(suggestion);
-                          }}
-                          className="block w-full text-left text-xs p-2 bg-primary/5 hover:bg-primary/10 rounded border border-primary/10 transition-colors"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary/20 to-amber-100 flex items-center justify-center animate-float">
+                    <span className="text-2xl">🤵</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4">How can I help with your wedding?</p>
+                  <div className="space-y-2">
+                    {[
+                      "Summarize guest dietary needs",
+                      "What vendors need follow-up?",
+                      "Draft a reminder message",
+                    ].map((suggestion, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setChatInput(suggestion)}
+                        className="block w-full text-left text-xs p-2 bg-primary/5 hover:bg-primary/10 rounded border border-primary/10 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -675,31 +777,67 @@ export default function DashboardPage() {
                   {chatMessages.map((msg, index) => (
                     <div 
                       key={index} 
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex animate-bubble-in ${msg.role === 'user' ? 'justify-end' : msg.role === 'system' ? 'justify-center' : 'justify-start'}`}
                     >
-                      <div className={`flex items-start gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
-                        }`}>
-                          {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                      {msg.role === 'system' ? (
+                        <div className="text-xs text-center text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
+                          {msg.content}
                         </div>
-                        <div className={`p-3 rounded-lg ${
-                          msg.role === 'user' 
-                            ? 'bg-primary text-primary-foreground' 
-                            : msg.isError 
-                              ? 'bg-red-50 border border-red-200 text-red-700'
-                              : 'bg-gray-100 text-foreground'
-                        }`}>
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      ) : (
+                        <div className={`flex items-start gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-primary/20 to-amber-100'
+                          }`}>
+                            {msg.role === 'user' ? <User className="w-4 h-4" /> : <span className="text-xs">🤵</span>}
+                          </div>
+                          <div>
+                            <div className={`p-3 rounded-lg ${
+                              msg.role === 'user' 
+                                ? msg.isComplaint ? 'bg-red-500 text-white' : 'bg-primary text-primary-foreground'
+                                : msg.isError 
+                                  ? 'bg-red-50 border border-red-200 text-red-700'
+                                  : msg.isDraft
+                                    ? 'bg-blue-50 border border-blue-200'
+                                    : 'bg-gray-100'
+                            }`}>
+                              {isEditingDraft && msg.isDraft && index === chatMessages.length - 1 ? (
+                                <Textarea
+                                  value={draftedComplaint}
+                                  onChange={(e) => setDraftedComplaint(e.target.value)}
+                                  className="min-h-[100px] text-sm border-blue-300"
+                                />
+                              ) : (
+                                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                              )}
+                            </div>
+                            {msg.isDraft && (
+                              <div className="flex gap-2 mt-2">
+                                {isEditingDraft && index === chatMessages.length - 1 ? (
+                                  <Button size="sm" variant="outline" onClick={handleSaveDraft} className="h-7 text-xs">
+                                    <CheckCircle className="w-3 h-3 mr-1" /> Save
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button size="sm" variant="outline" onClick={handleEditDraft} className="h-7 text-xs">
+                                      <Edit className="w-3 h-3 mr-1" /> Edit
+                                    </Button>
+                                    <Button size="sm" onClick={handleSendToVendor} className="h-7 text-xs bg-green-600 hover:bg-green-700">
+                                      <Send className="w-3 h-3 mr-1" /> Ready to Send
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
-                  {isSendingChat && (
-                    <div className="flex justify-start">
+                  {isSendingChat && !isComplaintMode && (
+                    <div className="flex justify-start animate-bubble-in">
                       <div className="flex items-start gap-2">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/10 text-primary">
-                          <Bot className="w-4 h-4" />
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-amber-100 flex items-center justify-center">
+                          <span className="text-xs">🤵</span>
                         </div>
                         <div className="p-3 rounded-lg bg-gray-100">
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -720,12 +858,12 @@ export default function DashboardPage() {
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask about your wedding..."
                   className="flex-1 border-primary/20"
-                  disabled={isSendingChat || !selectedWeddingId}
+                  disabled={isSendingChat || !selectedWeddingId || isComplaintMode}
                 />
                 <Button 
                   type="submit" 
                   size="icon" 
-                  disabled={isSendingChat || !chatInput.trim() || !selectedWeddingId}
+                  disabled={isSendingChat || !chatInput.trim() || !selectedWeddingId || isComplaintMode}
                   className="bg-primary hover:bg-primary/90"
                 >
                   <Send className="w-4 h-4" />
