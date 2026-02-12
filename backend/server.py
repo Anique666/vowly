@@ -341,18 +341,81 @@ async def delete_guest(guest_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Vendor Endpoints
-@api_router.post("/vendors", response_model=Vendor)
-async def create_vendor(vendor_data: VendorCreate):
-    """Create a new vendor"""
+# Vendor Endpoints with Validation
+@api_router.get("/vendor/list", response_model=list[Vendor])
+async def list_vendors_by_wedding(weddingId: str):
+    """
+    Get all vendors for a specific wedding
+    Query parameter: weddingId (required)
+    """
     try:
+        # Validate wedding exists
+        try:
+            get_from_collection('wedding.json', 'weddings', weddingId)
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Wedding with id '{weddingId}' not found"
+            )
+        
+        # Get vendors filtered by weddingId
+        vendors = list_collection('vendors.json', 'vendors', {"weddingId": weddingId})
+        logger.info(f"Retrieved {len(vendors)} vendors for wedding {weddingId}")
+        
+        return [Vendor(**v) for v in vendors]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing vendors: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@api_router.post("/vendor/respond", response_model=Vendor, status_code=201)
+async def vendor_respond(vendor_data: VendorCreate):
+    """
+    Create vendor availability response with validation:
+    - Email format is validated by Pydantic
+    - attendingDays length must match number of wedding days
+    """
+    try:
+        # Get the wedding to validate attendingDays length
+        try:
+            wedding = get_from_collection('wedding.json', 'weddings', vendor_data.weddingId)
+            wedding_obj = Wedding(**wedding)
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Wedding with id '{vendor_data.weddingId}' not found"
+            )
+        
+        # Validation: Check attendingDays length matches wedding days
+        num_wedding_days = len(wedding_obj.days)
+        num_attending_days = len(vendor_data.attendingDays)
+        
+        if num_attending_days != num_wedding_days:
+            raise HTTPException(
+                status_code=400,
+                detail=f"attendingDays length ({num_attending_days}) must match number of wedding days ({num_wedding_days})"
+            )
+        
+        # Create vendor
         vendor = Vendor(**vendor_data.model_dump())
         result = append_to_collection('vendors.json', 'vendors', vendor.model_dump())
-        logger.info(f"Created vendor: {vendor.id}")
+        logger.info(f"Created vendor response: {vendor.id} - {vendor.name} ({vendor.serviceType}) for wedding {vendor.weddingId}")
+        
         return Vendor(**result)
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error creating vendor: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error creating vendor response: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# Legacy vendor endpoints for compatibility
+@api_router.post("/vendors", response_model=Vendor)
+async def create_vendor(vendor_data: VendorCreate):
+    """Legacy endpoint - redirects to /vendor/respond"""
+    return await vendor_respond(vendor_data)
 
 @api_router.get("/vendors", response_model=List[Vendor])
 async def list_vendors(wedding_id: str = None):
