@@ -111,6 +111,174 @@
         true
       ],
       "notes": "DJ and sound system"
+    },
+    {
+      "id": "887158b5-678b-47d8-865c-a16776bf1893",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Royal Caterers",
+      "serviceType": "catering",
+      "email": "info@royalcaterers.com",
+      "phoneNumber": "+91-9876543210",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "Specializes in North Indian cuisine"
+    },
+    {
+      "id": "ba945643-3888-4ca3-8996-c96c792f27a8",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Vendor Without Email",
+      "serviceType": "decoration",
+      "email": null,
+      "phoneNumber": "+91-9876543210",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "Specializes in North Indian cuisine"
+    },
+    {
+      "id": "d71e1750-07d8-4335-b88d-c470b2f2421f",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Dream Photography",
+      "serviceType": "photography",
+      "email": "contact@dreamphotos.com",
+      "phoneNumber": "+91-9876543211",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Professional wedding photography and videography"
+    },
+    {
+      "id": "9ee61908-5390-41b5-85ef-7eaacd83557c",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Flower Power Decorations",
+      "serviceType": "decoration",
+      "email": "info@flowerpower.com",
+      "phoneNumber": "+91-9876543212",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "notes": "Floral and traditional decorations"
+    },
+    {
+      "id": "21cff18b-ceaf-4ddc-9943-4f1a6f4848a4",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Sound Masters",
+      "serviceType": "music",
+      "email": "booking@soundmasters.com",
+      "phoneNumber": "+91-9876543213",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "DJ and professional sound system"
+    },
+    {
+      "id": "b0ef9834-6dc9-46d3-9de1-2b8ac06b9f32",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Service Test 1",
+      "serviceType": "catering",
+      "email": "service1@example.com",
+      "phoneNumber": "+91-9876540001",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Test catering service"
+    },
+    {
+      "id": "4c795dde-0abd-408a-8e9a-06df873d239f",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Service Test 2",
+      "serviceType": "photography",
+      "email": "service2@example.com",
+      "phoneNumber": "+91-9876540002",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Test photography service"
+    },
+    {
+      "id": "903c178a-0702-456b-a803-4295592368c8",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Service Test 3",
+      "serviceType": "decoration",
+      "email": "service3@example.com",
+      "phoneNumber": "+91-9876540003",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Test decoration service"
+    },
+    {
+      "id": "f7755365-18e9-4453-bb4d-bfeb1aad40d1",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Service Test 4",
+      "serviceType": "music",
+      "email": "service4@example.com",
+      "phoneNumber": "+91-9876540004",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Test music service"
+    },
+    {
+      "id": "9c3469fa-2079-493a-841f-1dfc7e531e63",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Service Test 5",
+      "serviceType": "venue",
+      "email": "service5@example.com",
+      "phoneNumber": "+91-9876540005",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Test venue service"
+    },
+    {
+      "id": "ab6cf4bf-727b-4ba4-9a53-9c8f7df56297",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Service Test 6",
+      "serviceType": "transport",
+      "email": "service6@example.com",
+      "phoneNumber": "+91-9876540006",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Test transport service"
+    },
+    {
+      "id": "ec727150-1961-4a35-9e77-6f04a9067c2e",
+      "weddingId": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Vendor Without Phone",
+      "serviceType": "makeup",
+      "email": "nophone@example.com",
+      "phoneNumber": null,
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "No phone contact"
     }
   ]
 }

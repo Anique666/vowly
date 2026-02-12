@@ -416,6 +416,52 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "87bc673b-f61c-4eea-ab22-27d78eb5f03c",
+      "name": "Vendor API Test Wedding",
+      "location": "Test Venue",
+      "startDate": "2026-12-01",
+      "endDate": "2026-12-03",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-12-01",
+          "events": [
+            {
+              "id": "34e928e6-6fc7-4a7d-8e75-dd046f1238ef",
+              "name": "Welcome",
+              "time": "18:00",
+              "venue": "Garden"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-12-02",
+          "events": [
+            {
+              "id": "c80985bd-905c-48e5-82cb-c8a292915692",
+              "name": "Ceremony",
+              "time": "16:00",
+              "venue": "Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-12-03",
+          "events": [
+            {
+              "id": "da28e01d-b26e-4273-b8f2-5d7278fd84a4",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Ballroom"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
