@@ -103,12 +103,9 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Build /dashboard page in Next.js:
-  - Fetch wedding details, guests, and vendors from backend APIs
-  - Display: Day selector, Guest count per day, Dietary breakdown, Accommodation count, Vendor status
-  - Add buttons: "Generate Vendor Brief" → calls /api/ai/generate-vendor-brief, "Draft Vendor Message" → calls /api/ai/chat with context
-  - Add AI chatbot panel: Chat UI, Calls /api/ai/chat
-  - Style using shadcn/ui components
+  Build /guestdashboard and /postwedding pages in Next.js:
+  - /guestdashboard: Show today's events, time until next event, AI activity suggestions (/api/ai/guest-day-suggestions), guest chatbot (/api/ai/chat)
+  - /postwedding: Fetch photos from GET /api/photos, display photo gallery grid, loading and empty states
 
 backend:
   - task: "POST /api/wedding/create endpoint"
