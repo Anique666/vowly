@@ -736,6 +736,28 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "33472279-7662-48dd-85f9-5db3ffa0e7e4",
+      "name": "Email Test Wedding",
+      "location": "Bangalore, India",
+      "startDate": "2026-05-20",
+      "endDate": "2026-05-22",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-05-20",
+          "events": [
+            {
+              "id": "08d102c3-a2c4-4da4-ac5a-47412af6a492",
+              "name": "Reception",
+              "time": "18:00",
+              "venue": "Grand Ballroom"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
