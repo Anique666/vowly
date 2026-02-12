@@ -4,7 +4,7 @@ import requests
 import json
 
 # Backend configuration  
-BACKEND_URL = "https://celebrate-together-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://vendor-hub-148.preview.emergentagent.com/api"
 
 def test_edge_cases():
     """Test additional edge cases for wedding APIs"""
