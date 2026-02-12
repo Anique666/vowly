@@ -93,6 +93,252 @@ async def get_status_checks():
     
     return status_checks
 
+
+# ============================================================================
+# WEDDING MANAGEMENT ENDPOINTS
+# ============================================================================
+
+# Wedding Endpoints
+@api_router.post("/weddings", response_model=Wedding)
+async def create_wedding(wedding_data: WeddingCreate):
+    """Create a new wedding"""
+    try:
+        wedding = Wedding(**wedding_data.model_dump())
+        result = append_to_collection('wedding.json', 'weddings', wedding.model_dump())
+        logger.info(f"Created wedding: {wedding.id}")
+        return Wedding(**result)
+    except Exception as e:
+        logger.error(f"Error creating wedding: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/weddings", response_model=List[Wedding])
+async def list_weddings():
+    """List all weddings"""
+    try:
+        weddings = list_collection('wedding.json', 'weddings')
+        return [Wedding(**w) for w in weddings]
+    except Exception as e:
+        logger.error(f"Error listing weddings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/weddings/{wedding_id}", response_model=Wedding)
+async def get_wedding(wedding_id: str):
+    """Get a specific wedding by ID"""
+    try:
+        wedding = get_from_collection('wedding.json', 'weddings', wedding_id)
+        return Wedding(**wedding)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting wedding: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/weddings/{wedding_id}", response_model=Wedding)
+async def update_wedding(wedding_id: str, wedding_data: WeddingCreate):
+    """Update a wedding"""
+    try:
+        wedding = Wedding(id=wedding_id, **wedding_data.model_dump())
+        result = update_in_collection('wedding.json', 'weddings', wedding_id, wedding.model_dump())
+        logger.info(f"Updated wedding: {wedding_id}")
+        return Wedding(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating wedding: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/weddings/{wedding_id}")
+async def delete_wedding(wedding_id: str):
+    """Delete a wedding"""
+    try:
+        delete_from_collection('wedding.json', 'weddings', wedding_id)
+        logger.info(f"Deleted wedding: {wedding_id}")
+        return {"message": "Wedding deleted successfully", "id": wedding_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting wedding: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Guest Endpoints
+@api_router.post("/guests", response_model=Guest)
+async def create_guest(guest_data: GuestCreate):
+    """Create a new guest"""
+    try:
+        guest = Guest(**guest_data.model_dump())
+        result = append_to_collection('guests.json', 'guests', guest.model_dump())
+        logger.info(f"Created guest: {guest.id}")
+        return Guest(**result)
+    except Exception as e:
+        logger.error(f"Error creating guest: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/guests", response_model=List[Guest])
+async def list_guests(wedding_id: str = None):
+    """List all guests, optionally filtered by wedding_id"""
+    try:
+        filter_by = {"weddingId": wedding_id} if wedding_id else None
+        guests = list_collection('guests.json', 'guests', filter_by)
+        return [Guest(**g) for g in guests]
+    except Exception as e:
+        logger.error(f"Error listing guests: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/guests/{guest_id}", response_model=Guest)
+async def get_guest(guest_id: str):
+    """Get a specific guest by ID"""
+    try:
+        guest = get_from_collection('guests.json', 'guests', guest_id)
+        return Guest(**guest)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting guest: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/guests/{guest_id}", response_model=Guest)
+async def update_guest(guest_id: str, guest_data: GuestCreate):
+    """Update a guest"""
+    try:
+        guest = Guest(id=guest_id, **guest_data.model_dump())
+        result = update_in_collection('guests.json', 'guests', guest_id, guest.model_dump())
+        logger.info(f"Updated guest: {guest_id}")
+        return Guest(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating guest: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/guests/{guest_id}")
+async def delete_guest(guest_id: str):
+    """Delete a guest"""
+    try:
+        delete_from_collection('guests.json', 'guests', guest_id)
+        logger.info(f"Deleted guest: {guest_id}")
+        return {"message": "Guest deleted successfully", "id": guest_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting guest: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Vendor Endpoints
+@api_router.post("/vendors", response_model=Vendor)
+async def create_vendor(vendor_data: VendorCreate):
+    """Create a new vendor"""
+    try:
+        vendor = Vendor(**vendor_data.model_dump())
+        result = append_to_collection('vendors.json', 'vendors', vendor.model_dump())
+        logger.info(f"Created vendor: {vendor.id}")
+        return Vendor(**result)
+    except Exception as e:
+        logger.error(f"Error creating vendor: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/vendors", response_model=List[Vendor])
+async def list_vendors(wedding_id: str = None):
+    """List all vendors, optionally filtered by wedding_id"""
+    try:
+        filter_by = {"weddingId": wedding_id} if wedding_id else None
+        vendors = list_collection('vendors.json', 'vendors', filter_by)
+        return [Vendor(**v) for v in vendors]
+    except Exception as e:
+        logger.error(f"Error listing vendors: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/vendors/{vendor_id}", response_model=Vendor)
+async def get_vendor(vendor_id: str):
+    """Get a specific vendor by ID"""
+    try:
+        vendor = get_from_collection('vendors.json', 'vendors', vendor_id)
+        return Vendor(**vendor)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting vendor: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/vendors/{vendor_id}", response_model=Vendor)
+async def update_vendor(vendor_id: str, vendor_data: VendorCreate):
+    """Update a vendor"""
+    try:
+        vendor = Vendor(id=vendor_id, **vendor_data.model_dump())
+        result = update_in_collection('vendors.json', 'vendors', vendor_id, vendor.model_dump())
+        logger.info(f"Updated vendor: {vendor_id}")
+        return Vendor(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating vendor: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/vendors/{vendor_id}")
+async def delete_vendor(vendor_id: str):
+    """Delete a vendor"""
+    try:
+        delete_from_collection('vendors.json', 'vendors', vendor_id)
+        logger.info(f"Deleted vendor: {vendor_id}")
+        return {"message": "Vendor deleted successfully", "id": vendor_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting vendor: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Photo Endpoints
+@api_router.post("/photos", response_model=Photo)
+async def create_photo(photo_data: PhotoCreate):
+    """Create a new photo entry"""
+    try:
+        photo = Photo(**photo_data.model_dump())
+        result = append_to_collection('photos.json', 'photos', photo.model_dump())
+        logger.info(f"Created photo: {photo.id}")
+        return Photo(**result)
+    except Exception as e:
+        logger.error(f"Error creating photo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/photos", response_model=List[Photo])
+async def list_photos(wedding_id: str = None):
+    """List all photos, optionally filtered by wedding_id"""
+    try:
+        filter_by = {"weddingId": wedding_id} if wedding_id else None
+        photos = list_collection('photos.json', 'photos', filter_by)
+        return [Photo(**p) for p in photos]
+    except Exception as e:
+        logger.error(f"Error listing photos: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/photos/{photo_id}", response_model=Photo)
+async def get_photo(photo_id: str):
+    """Get a specific photo by ID"""
+    try:
+        photo = get_from_collection('photos.json', 'photos', photo_id)
+        return Photo(**photo)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting photo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/photos/{photo_id}")
+async def delete_photo(photo_id: str):
+    """Delete a photo"""
+    try:
+        delete_from_collection('photos.json', 'photos', photo_id)
+        logger.info(f"Deleted photo: {photo_id}")
+        return {"message": "Photo deleted successfully", "id": photo_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting photo: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
