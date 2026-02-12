@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, Trash2, Send, Save, Calendar, MapPin, Users, Sparkles, 
   Loader2, UserPlus, Mail, Phone, Building, Lightbulb, CheckCircle,
-  X, ArrowRight
+  X, ArrowRight, AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { ShaadiMiniBot } from '@/components/onboarding/ShaadiBot';
@@ -30,6 +30,13 @@ const VENDOR_ROLES = [
   { value: 'pandit', label: 'Pandit/Priest' },
   { value: 'other', label: 'Other' },
 ];
+
+// Debug logging helper
+const debugLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development' || typeof window !== 'undefined') {
+    console.log(`[HOST DEBUG] ${message}:`, data);
+  }
+};
 
 export default function HostPage() {
   const { toast } = useToast();
@@ -53,11 +60,14 @@ export default function HostPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingInvites, setIsSendingInvites] = useState(false);
   const [showMiniBot, setShowMiniBot] = useState(false);
+  const [invitesSentCount, setInvitesSentCount] = useState(0);
 
   // Vendor suggestions state
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [suggestedVendors, setSuggestedVendors] = useState([]);
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+  const [suggestionLocation, setSuggestionLocation] = useState('');
+  const [suggestionError, setSuggestionError] = useState('');
 
   // Show mini bot after a delay
   useEffect(() => {
@@ -143,54 +153,108 @@ export default function HostPage() {
     setGuests(newGuests);
   };
 
-  // Suggest vendors by location
+  // Extract city/region from location string
+  const extractCity = (locationStr) => {
+    if (!locationStr || typeof locationStr !== 'string') return '';
+    // Try to extract city name - usually before the comma or the first word
+    const parts = locationStr.split(',').map(p => p.trim());
+    // Return the first part (typically the city) or the whole string if no comma
+    return parts[0] || locationStr.trim();
+  };
+
+  // Validate location for vendor suggestions
+  const isValidLocation = (loc) => {
+    if (!loc || typeof loc !== 'string') return false;
+    const trimmed = loc.trim();
+    // Must be at least 2 characters and contain some letters
+    return trimmed.length >= 2 && /[a-zA-Z]/.test(trimmed);
+  };
+
+  // Suggest vendors by location - FIXED
   const handleSuggestVendors = async () => {
-    if (!location.trim()) {
+    // Validate location
+    if (!isValidLocation(location)) {
       toast({
         title: 'Location Required',
-        description: 'Please enter a wedding location first to get vendor suggestions.',
+        description: 'Please enter a valid wedding location (city/area) to get vendor suggestions.',
         variant: 'destructive',
       });
       return;
     }
 
+    const city = extractCity(location);
+    setSuggestionLocation(city);
+    setSuggestionError('');
     setIsLoadingSuggestions(true);
     setSuggestedVendors([]);
     setShowSuggestionsModal(true);
 
+    debugLog('Starting vendor suggestion', { location, city });
+
     try {
-      // First set the location for the planner
-      await fetch(`${backendUrl}/api/ai/planner/set-details`, {
+      // First set the location for the planner with the extracted city
+      const setDetailsPayload = { location: city };
+      debugLog('Setting planner details', setDetailsPayload);
+
+      const setDetailsRes = await fetch(`${backendUrl}/api/ai/planner/set-details`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location }),
+        body: JSON.stringify(setDetailsPayload),
       });
+
+      if (!setDetailsRes.ok) {
+        debugLog('Set details failed', { status: setDetailsRes.status });
+        throw new Error('Failed to set location details');
+      }
+
+      const setDetailsData = await setDetailsRes.json();
+      debugLog('Set details response', setDetailsData);
 
       // Get suggestions for different vendor types
       const vendorTypes = ['catering', 'photography', 'decoration'];
       const suggestions = [];
 
       for (const type of vendorTypes) {
+        debugLog(`Fetching ${type} suggestions for ${city}`, {});
+
         const response = await fetch(`${backendUrl}/api/ai/planner/search-vendor`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ vendor_type: type }),
         });
 
+        debugLog(`${type} suggestion response status`, { status: response.status });
+
         if (response.ok) {
           const data = await response.json();
-          suggestions.push({
-            type,
-            suggestions: data.result,
-          });
+          debugLog(`${type} suggestions data`, data);
+
+          // Check if suggestions are actually relevant to the location
+          const result = data.result || '';
+          const isRelevant = result.toLowerCase().includes(city.toLowerCase()) || 
+                           result.toLowerCase().includes(location.toLowerCase().split(',')[0]);
+
+          if (result && result.trim().length > 20) {
+            suggestions.push({
+              type,
+              suggestions: result,
+              isRelevant,
+            });
+          }
         }
+      }
+
+      if (suggestions.length === 0) {
+        setSuggestionError(`No reliable nearby vendor suggestions found for ${city}. Try entering a more specific location or major city.`);
       }
 
       setSuggestedVendors(suggestions);
     } catch (err) {
+      debugLog('Vendor suggestion error', { error: err.message });
+      setSuggestionError(`Failed to get vendor suggestions: ${err.message}`);
       toast({
         title: 'Error',
-        description: 'Failed to get vendor suggestions. Please try again.',
+        description: `Failed to get vendor suggestions: ${err.message}`,
         variant: 'destructive',
       });
     } finally {
@@ -256,34 +320,40 @@ export default function HostPage() {
         })),
       };
 
+      debugLog('Saving wedding', payload);
+
       const response = await fetch(`${backendUrl}/api/wedding/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
+      const data = await response.json();
+      debugLog('Wedding save response', { status: response.status, data });
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to save wedding');
+        throw new Error(data.detail || 'Failed to save wedding');
       }
 
-      const data = await response.json();
       setSavedWeddingId(data.id);
 
       // Save vendors if any
       for (const vendor of vendors) {
         if (vendor.name.trim()) {
+          const vendorPayload = {
+            weddingId: data.id,
+            name: vendor.name,
+            serviceType: vendor.role,
+            email: vendor.email || null,
+            phoneNumber: vendor.phone || null,
+            attendingDays: days.map(() => true),
+          };
+          debugLog('Saving vendor', vendorPayload);
+
           await fetch(`${backendUrl}/api/vendors`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              weddingId: data.id,
-              name: vendor.name,
-              serviceType: vendor.role,
-              email: vendor.email || null,
-              phoneNumber: vendor.phone || null,
-              attendingDays: days.map(() => true),
-            }),
+            body: JSON.stringify(vendorPayload),
           });
         }
       }
@@ -293,6 +363,7 @@ export default function HostPage() {
         description: `"${weddingName}" has been created successfully.`,
       });
     } catch (err) {
+      debugLog('Wedding save error', { error: err.message });
       toast({
         title: 'Error',
         description: err.message || 'Failed to save wedding',
@@ -303,55 +374,97 @@ export default function HostPage() {
     }
   };
 
-  // Send invites
+  // Send invites - FIXED
   const handleSendInvites = async () => {
     if (!savedWeddingId) {
       toast({
         title: 'Error',
-        description: 'Please save the wedding first',
+        description: 'Please save the wedding first before sending invites.',
         variant: 'destructive',
       });
       return;
     }
 
-    const validGuests = guests.filter(g => g.email && g.email.includes('@'));
+    // Validate guests - filter only valid emails
+    const validGuests = guests.filter(g => {
+      const email = g.email?.trim();
+      return email && email.includes('@') && email.includes('.');
+    });
+
     if (validGuests.length === 0) {
       toast({
         title: 'Validation Error',
-        description: 'Please enter at least one valid email address',
+        description: 'Please enter at least one valid email address (e.g., name@example.com)',
         variant: 'destructive',
       });
       return;
     }
 
     setIsSendingInvites(true);
+    setInvitesSentCount(0);
+
     try {
+      const payload = {
+        weddingId: savedWeddingId,
+        guestEmails: validGuests.map(g => g.email.trim()),
+      };
+
+      debugLog('Sending invites request', payload);
+
       const response = await fetch(`${backendUrl}/api/email/send-invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          weddingId: savedWeddingId,
-          guestEmails: validGuests.map(g => g.email),
-        }),
+        body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to send invites');
-      }
 
       const data = await response.json();
+      debugLog('Send invites response', { status: response.status, data });
+
+      if (!response.ok) {
+        const errorMessage = data.detail || data.message || 'Failed to send invites';
+        throw new Error(errorMessage);
+      }
+
+      // Success!
+      const sentCount = data.emailsSent || 0;
+      const failedEmails = data.failed || [];
+      setInvitesSentCount(sentCount);
+
+      if (failedEmails.length > 0) {
+        toast({
+          title: 'Partial Success',
+          description: `Sent ${sentCount} invite(s). Failed to send to: ${failedEmails.join(', ')}`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: '✅ Invitations Sent!',
+          description: `Successfully sent ${sentCount} invitation(s) to your guests.`,
+        });
+      }
       
-      toast({
-        title: 'Invitations Sent!',
-        description: `${data.emailsSent} invitation(s) sent successfully.`,
-      });
-      
-      setGuests([{ name: '', email: '' }]);
+      // Clear guest list after successful send
+      if (sentCount > 0) {
+        setGuests([{ name: '', email: '' }]);
+      }
+
     } catch (err) {
+      debugLog('Send invites error', { error: err.message });
+      
+      let userMessage = err.message;
+      
+      // Provide more user-friendly error messages
+      if (err.message.includes('validation')) {
+        userMessage = 'Invalid email format. Please check the email addresses.';
+      } else if (err.message.includes('not found')) {
+        userMessage = 'Wedding not found. Please save the wedding first.';
+      } else if (err.message.includes('RESEND') || err.message.includes('API')) {
+        userMessage = 'Email service error. Please try again later or contact support.';
+      }
+
       toast({
-        title: 'Error',
-        description: err.message || 'Failed to send invitations',
+        title: 'Failed to Send Invites',
+        description: userMessage,
         variant: 'destructive',
       });
     } finally {
@@ -421,11 +534,11 @@ export default function HostPage() {
                 <div className="space-y-2">
                   <Label htmlFor="location" className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
-                    Location *
+                    Location * <span className="text-xs text-muted-foreground ml-1">(City, Region)</span>
                   </Label>
                   <Input
                     id="location"
-                    placeholder="e.g., Udaipur Palace, Rajasthan"
+                    placeholder="e.g., Mumbai, India or Bengaluru"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     className="border-primary/20 focus:border-primary"
@@ -561,8 +674,8 @@ export default function HostPage() {
                   variant="outline" 
                   size="sm" 
                   onClick={handleSuggestVendors}
-                  disabled={isLoadingSuggestions}
-                  className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+                  disabled={isLoadingSuggestions || !isValidLocation(location)}
+                  className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50 disabled:opacity-50"
                 >
                   {isLoadingSuggestions ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -572,6 +685,12 @@ export default function HostPage() {
                   Suggest Vendors Near Venue
                 </Button>
               </div>
+              {!isValidLocation(location) && (
+                <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  Enter a valid location above to enable vendor suggestions
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-6">
               <AnimatePresence>
@@ -680,9 +799,23 @@ export default function HostPage() {
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     Wedding Saved! Now Invite Your Guests
                   </CardTitle>
-                  <CardDescription>Add guest details and send invitations</CardDescription>
+                  <CardDescription>Add guest emails and send personalized invitations</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Success message for sent invites */}
+                  {invitesSentCount > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-4 bg-green-100 border border-green-300 rounded-lg flex items-center gap-3"
+                    >
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                      <span className="text-green-800 font-medium">
+                        Successfully sent {invitesSentCount} invitation(s) to your guests!
+                      </span>
+                    </motion.div>
+                  )}
+
                   <AnimatePresence>
                     {guests.map((guest, index) => (
                       <motion.div
@@ -695,7 +828,7 @@ export default function HostPage() {
                       >
                         <div className="col-span-5">
                           <Input
-                            placeholder="Guest Name"
+                            placeholder="Guest Name (optional)"
                             value={guest.name}
                             onChange={(e) => updateGuest(index, 'name', e.target.value)}
                             className="border-green-200"
@@ -704,7 +837,7 @@ export default function HostPage() {
                         <div className="col-span-6">
                           <Input
                             type="email"
-                            placeholder="Email Address"
+                            placeholder="Email Address *"
                             value={guest.email}
                             onChange={(e) => updateGuest(index, 'email', e.target.value)}
                             className="border-green-200"
@@ -732,15 +865,16 @@ export default function HostPage() {
                       className="gap-2 bg-green-600 hover:bg-green-700"
                     >
                       {isSendingInvites ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" />Sending...</>
+                        <><Loader2 className="w-4 h-4 animate-spin" />Sending Invites...</>
                       ) : (
                         <><Send className="w-4 h-4" />Send Invitations</>
                       )}
                     </Button>
                   </div>
 
-                  <p className="text-sm text-muted-foreground">
-                    Invitations will include the wedding ID and RSVP link for guests to respond.
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Invitations include the wedding details and a personalized RSVP link.
                   </p>
                 </CardContent>
               </Card>
@@ -749,23 +883,32 @@ export default function HostPage() {
         </motion.div>
       </main>
 
-      {/* Vendor Suggestions Modal */}
+      {/* Vendor Suggestions Modal - IMPROVED */}
       <Dialog open={showSuggestionsModal} onOpenChange={setShowSuggestionsModal}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 font-serif">
               <Lightbulb className="w-5 h-5 text-primary" />
-              Vendor Suggestions for {location || 'Your Location'}
+              Vendor Suggestions
             </DialogTitle>
-            <DialogDescription>
-              AI-generated vendor recommendations. Click to add them to your list.
+            <DialogDescription className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span>Suggestions near: <strong className="text-foreground">{suggestionLocation || location}</strong></span>
             </DialogDescription>
           </DialogHeader>
           
           {isLoadingSuggestions ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="ml-3 text-muted-foreground">Finding vendors near you...</span>
+              <span className="ml-3 text-muted-foreground">Finding vendors in {suggestionLocation}...</span>
+            </div>
+          ) : suggestionError ? (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 mx-auto text-amber-500 mb-4" />
+              <p className="text-amber-700">{suggestionError}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Try specifying a major city like Mumbai, Delhi, or Bengaluru.
+              </p>
             </div>
           ) : suggestedVendors.length > 0 ? (
             <div className="space-y-6">
@@ -781,12 +924,20 @@ export default function HostPage() {
                   <div className="p-4 bg-gradient-to-r from-primary/5 to-transparent rounded-lg border border-primary/10">
                     <pre className="whitespace-pre-wrap text-sm font-sans">{category.suggestions}</pre>
                   </div>
+                  {!category.isRelevant && (
+                    <p className="text-xs text-amber-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      AI suggestions may include vendors outside the specified location
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              No suggestions available. Try again.
+              <Building className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>No vendor suggestions available.</p>
+              <p className="text-sm mt-2">Try entering a more specific location.</p>
             </div>
           )}
 
