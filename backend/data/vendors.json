@@ -69,6 +69,48 @@
         true
       ],
       "notes": "Specializes in North Indian cuisine"
+    },
+    {
+      "id": "65c34e0f-4c2e-44bf-b40c-8d6632221df5",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Dream Photography",
+      "serviceType": "photography",
+      "email": "contact@dreamphotos.com",
+      "phoneNumber": "+91-9876543211",
+      "attendingDays": [
+        true,
+        true,
+        true
+      ],
+      "notes": "Professional wedding photography"
+    },
+    {
+      "id": "8d0692e8-bd46-4104-a5d1-9dea6bcf54d0",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Flower Power Decorations",
+      "serviceType": "decoration",
+      "email": "info@flowerpower.com",
+      "phoneNumber": "+91-9876543212",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "notes": "Floral arrangements"
+    },
+    {
+      "id": "22a54ed3-dfcc-4f50-acdc-7899d3629e38",
+      "weddingId": "f887960a-acd2-49e3-adcc-7b30b25632d3",
+      "name": "Sound Masters",
+      "serviceType": "music",
+      "email": "booking@soundmasters.com",
+      "phoneNumber": "+91-9876543213",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "DJ and sound system"
     }
   ]
 }
