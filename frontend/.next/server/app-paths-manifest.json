@@ -1,5 +1,7 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js",
-  "/api/health/route": "app/api/health/route.js"
+  "/api/health/route": "app/api/health/route.js",
+  "/host/page": "app/host/page.js",
+  "/rsvp/page": "app/rsvp/page.js",
+  "/page": "app/page.js"
 }
