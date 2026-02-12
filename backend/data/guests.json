@@ -246,6 +246,19 @@
       ],
       "dietary": "veg",
       "accommodation": true
+    },
+    {
+      "id": "b0fe6a48-e8ae-4bf6-8743-2e0fb207a9fe",
+      "weddingId": "1bf62db5-b5d4-44e1-9b6d-2d8a85a904ae",
+      "name": "Priya Sharma",
+      "email": "priya.sharma@example.com",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "dietary": "veg",
+      "accommodation": true
     }
   ]
 }

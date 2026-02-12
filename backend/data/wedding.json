@@ -552,6 +552,64 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "1bf62db5-b5d4-44e1-9b6d-2d8a85a904ae",
+      "name": "Test Wedding 2026",
+      "location": "Mumbai, India",
+      "startDate": "2026-08-15",
+      "endDate": "2026-08-17",
+      "days": [
+        {
+          "dayIndex": 1,
+          "date": "2026-08-15",
+          "events": [
+            {
+              "id": "9057786d-d2a5-46c7-8533-ab779947fe30",
+              "name": "Mehendi Ceremony",
+              "time": "14:00",
+              "venue": "Garden Area, Mumbai"
+            },
+            {
+              "id": "6cdce9e4-4524-42a4-a519-57144fd47dc2",
+              "name": "Sangeet Night",
+              "time": "19:00",
+              "venue": "Main Hall, Mumbai"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-08-16",
+          "events": [
+            {
+              "id": "b8c280b7-8ea2-4614-be79-faaf197632b6",
+              "name": "Haldi Ceremony",
+              "time": "10:00",
+              "venue": "Courtyard, Mumbai"
+            },
+            {
+              "id": "89b32b74-2148-44d6-8629-aebdb9b955bd",
+              "name": "Wedding Ceremony",
+              "time": "18:00",
+              "venue": "Temple Hall, Mumbai"
+            }
+          ]
+        },
+        {
+          "dayIndex": 3,
+          "date": "2026-08-17",
+          "events": [
+            {
+              "id": "eb609aa7-cce9-4a19-8997-f409ed7cd708",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Banquet Hall, Mumbai"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
