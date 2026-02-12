@@ -299,32 +299,19 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implemented /host and /rsvp pages with:
-      1. /host page: Wedding setup form with name, location, dates, day-wise events (add/remove days and events), vendors section (optional), save wedding button, invite guests section (appears after saving)
-      2. /rsvp page: Fetches wedding details, shows RSVP form with name, email, attending days checkboxes, dietary preference radio, accommodation radio
-      3. Gold and white theme throughout
-      4. Toast notifications for success/error feedback
-      5. Client-side validation implemented
-      
-      Ready for backend API testing to verify end-to-end flow.
-  - agent: "testing"
-    message: |
-      ✅ BACKEND TESTING COMPLETE - All 4 critical API endpoints are working perfectly:
-
-      🎯 CORE FUNCTIONALITY TESTED:
-      1. POST /api/wedding/create - Creates weddings with full validation (name required, days required, events required)
-      2. GET /api/wedding/{id} - Retrieves wedding data accurately with proper error handling  
-      3. POST /api/guest/rsvp - Processes RSVPs with attendingDays validation matching wedding days
-      4. POST /api/email/send-invites - Email API responds correctly (dummy key used, structure validated)
-
-      🔍 VALIDATION TESTING PASSED:
-      - Empty wedding name rejection (400 error)
-      - No days provided rejection (400 error) 
-      - No events provided rejection (400 error)
-      - Invalid wedding ID for RSVP (404 error)
-      - AttendingDays length mismatch validation (400 error)
-      - Non-existent wedding ID lookup (404 error)
-      - Health check endpoint functional
-
-      📊 TEST RESULTS: 9/9 test scenarios passed
-      Backend APIs are production-ready for frontend integration.
+      Built /dashboard page with all requested features:
+      1. Wedding Dashboard with selector dropdown to switch between weddings
+      2. Day selector tabs for multi-day weddings
+      3. Stats cards showing: Guests attending per day, Dietary breakdown (veg/non-veg/jain/vegan), Accommodation needs, Vendor status
+      4. Events list for selected day
+      5. Vendors list with confirmed/pending status
+      6. AI Actions section with:
+         - "Generate Vendor Brief" button → /api/ai/generate-vendor-brief
+         - "Draft Vendor Message" button → /api/ai/chat
+      7. AI Chat panel (slide-in from right) with:
+         - Chat UI with message bubbles
+         - Suggestion prompts
+         - Input field to ask questions
+         
+      NOTE: AI features require GROQ_API_KEY in backend/.env to work.
+      The backend already has ai_routes.py configured to use Groq LLM.
