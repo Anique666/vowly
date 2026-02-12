@@ -780,6 +780,28 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "f860c391-306b-4b67-829d-945cbf5ce7ef",
+      "name": "Invite Test Wedding",
+      "location": "Jaipur, India",
+      "startDate": "2026-07-20",
+      "endDate": "2026-07-22",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-07-20",
+          "events": [
+            {
+              "id": "9dd1de0a-6a38-4f29-8685-710c6128075c",
+              "name": "Sangeet",
+              "time": "19:00",
+              "venue": "Mahal Hall"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
