@@ -75,6 +75,118 @@ Once both servers are running, you can verify they're working:
 - **Backend Health**: http://localhost:8001/api/health
 - **API Root**: http://localhost:8001/api/
 
+## 🎉 Wedding Management API
+
+The template includes a complete wedding management system with file-based storage:
+
+### API Endpoints
+
+#### Weddings
+- `POST /api/weddings` - Create a new wedding
+- `GET /api/weddings` - List all weddings
+- `GET /api/weddings/{id}` - Get a specific wedding
+- `PUT /api/weddings/{id}` - Update a wedding
+- `DELETE /api/weddings/{id}` - Delete a wedding
+
+#### Guests
+- `POST /api/guests` - Create a new guest
+- `GET /api/guests?wedding_id={id}` - List guests for a wedding
+- `GET /api/guests/{id}` - Get a specific guest
+- `PUT /api/guests/{id}` - Update a guest
+- `DELETE /api/guests/{id}` - Delete a guest
+
+#### Vendors
+- `POST /api/vendors` - Create a new vendor
+- `GET /api/vendors?wedding_id={id}` - List vendors for a wedding
+- `GET /api/vendors/{id}` - Get a specific vendor
+- `PUT /api/vendors/{id}` - Update a vendor
+- `DELETE /api/vendors/{id}` - Delete a vendor
+
+#### Photos
+- `POST /api/photos` - Create a photo entry
+- `GET /api/photos?wedding_id={id}` - List photos for a wedding
+- `GET /api/photos/{id}` - Get a specific photo
+- `DELETE /api/photos/{id}` - Delete a photo
+
+### Data Models
+
+**Wedding**
+```json
+{
+  "name": "Sarah & John Wedding",
+  "location": "Mumbai, India",
+  "startDate": "2026-06-15",
+  "endDate": "2026-06-17",
+  "days": [
+    {
+      "dayIndex": 0,
+      "date": "2026-06-15",
+      "events": [
+        {
+          "name": "Mehendi",
+          "time": "18:00",
+          "venue": "Garden Hall"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Guest**
+```json
+{
+  "weddingId": "wedding-id",
+  "name": "Priya Sharma",
+  "email": "priya@example.com",
+  "attendingDays": [true, true, true],
+  "dietary": "veg",
+  "accommodation": true
+}
+```
+
+**Vendor**
+```json
+{
+  "weddingId": "wedding-id",
+  "name": "Royal Caterers",
+  "serviceType": "catering",
+  "email": "info@royalcaterers.com",
+  "phoneNumber": "+91-9876543210",
+  "attendingDays": [false, true, true],
+  "notes": "Specializes in North Indian cuisine"
+}
+```
+
+### Testing the API
+
+Run the included test script:
+```bash
+cd backend
+python test_api.py
+```
+
+Or test manually with curl:
+```bash
+# Create a wedding
+curl -X POST http://localhost:8001/api/weddings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Wedding",
+    "location": "Mumbai",
+    "startDate": "2026-06-15",
+    "endDate": "2026-06-17",
+    "days": []
+  }'
+```
+
+### Data Storage
+
+- All data is stored in JSON files under `/backend/data/`
+- Files are protected with in-memory mutex locks for concurrent access
+- Atomic writes prevent data corruption
+- Files are created automatically if missing
+
 ## 📁 Project Structure
 
 ```
