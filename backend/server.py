@@ -27,6 +27,7 @@ from utils.file_utils import (
     get_from_collection,
     list_collection
 )
+from routes.ai_routes import ai_router
 
 
 ROOT_DIR = Path(__file__).parent
@@ -840,6 +841,7 @@ async def send_thankyou_emails(request: SendThankYouRequest):
 
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(ai_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -508,6 +508,50 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "4d51b709-1bd2-4a8d-9f82-4414a32ede39",
+      "name": "string",
+      "location": "string",
+      "startDate": "string",
+      "endDate": "string",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "string",
+          "events": [
+            {
+              "id": "string",
+              "name": "string",
+              "time": "string",
+              "venue": "string"
+            }
+          ]
+        }
+      ],
+      "vendors": []
+    },
+    {
+      "id": "ffb7cc2d-b310-4e0c-a939-f335b52ad795",
+      "name": "string",
+      "location": "string",
+      "startDate": "string",
+      "endDate": "string",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "string",
+          "events": [
+            {
+              "id": "string",
+              "name": "string",
+              "time": "string",
+              "venue": "string"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
