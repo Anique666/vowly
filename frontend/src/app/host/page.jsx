@@ -232,15 +232,25 @@ export default function HostPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-amber-50/30 to-white">
+      {/* Mini Bot Helper */}
+      {showMiniBot && (
+        <ShaadiMiniBot 
+          message="Start by entering your wedding name and location. Then add your event days with all the ceremonies - Mehendi, Sangeet, and more!" 
+          onClose={handleDismissMiniBot}
+        />
+      )}
+
       {/* Header */}
       <header className="border-b border-primary/20 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold text-foreground">AI Wedding Ops</span>
+            <span className="text-xl font-bold">AI Wedding Ops</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link href="/host" className="text-sm font-medium text-primary">Host</Link>
+            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Dashboard</Link>
+            <Link href="/guestdashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Guest</Link>
             <Link href="/rsvp" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">RSVP</Link>
           </nav>
         </div>
