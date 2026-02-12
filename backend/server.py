@@ -1,4 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -28,6 +30,7 @@ from utils.file_utils import (
     list_collection
 )
 from routes.ai_routes import ai_router
+from routes.photo_routes import photo_router
 
 
 ROOT_DIR = Path(__file__).parent
