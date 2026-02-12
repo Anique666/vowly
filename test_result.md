@@ -172,29 +172,89 @@ backend:
         comment: "✅ PASSED - Wedding retrieval endpoint working correctly. Returns complete wedding data with all days, events, and metadata. Proper 404 error handling for non-existent wedding IDs. Data integrity maintained between create and retrieve operations."
 
 frontend:
+  - task: "/dashboard page - Wedding Dashboard"
+    implemented: true
+    working: true
+    file: "frontend/src/app/dashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented dashboard with wedding selector, day tabs, guest stats, dietary breakdown, accommodation count, vendor list with status, AI action buttons, and chat panel"
+
+  - task: "/dashboard page - Day Selector"
+    implemented: true
+    working: true
+    file: "frontend/src/app/dashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Tab-based day selector showing each day with date"
+
+  - task: "/dashboard page - Guest Stats Per Day"
+    implemented: true
+    working: true
+    file: "frontend/src/app/dashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Stats cards showing guests attending, dietary breakdown, accommodation needs"
+
+  - task: "/dashboard page - Vendor Status"
+    implemented: true
+    working: true
+    file: "frontend/src/app/dashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Shows vendor list with confirmed/pending status"
+
+  - task: "/dashboard page - AI Buttons"
+    implemented: true
+    working: true
+    file: "frontend/src/app/dashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Generate Vendor Brief and Draft Vendor Message buttons calling AI endpoints (requires GROQ_API_KEY)"
+
+  - task: "/dashboard page - Chat Panel"
+    implemented: true
+    working: true
+    file: "frontend/src/app/dashboard/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Slide-in chat panel with AI assistant calling /api/ai/chat (requires GROQ_API_KEY)"
+
   - task: "/host page - Wedding Setup Form"
     implemented: true
     working: true
     file: "frontend/src/app/host/page.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented with wedding name, location, dates, day-wise events with add/remove functionality"
-
-  - task: "/host page - Invite Guests Section"
-    implemented: true
-    working: true
-    file: "frontend/src/app/host/page.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Shows after wedding saved, comma-separated emails textarea, calls /api/email/send-invites"
 
   - task: "/rsvp page - RSVP Form"
     implemented: true
@@ -202,7 +262,7 @@ frontend:
     file: "frontend/src/app/rsvp/page.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
@@ -219,18 +279,6 @@ frontend:
       - working: true
         agent: "main"
         comment: "Theme configured with primary color as gold (hsl 43 96% 56%)"
-
-  - task: "Toast Notifications"
-    implemented: true
-    working: true
-    file: "frontend/src/components/ui/toaster.jsx"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: true
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Added 'use client' directive, integrated in layout for success/error toasts"
 
 metadata:
   created_by: "main_agent"
