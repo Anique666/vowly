@@ -58,6 +58,70 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "9c26696f-4170-47eb-82a4-5ba61403f31a",
+      "name": "Emma & Michael Wedding",
+      "location": "Jaipur, Rajasthan",
+      "startDate": "2026-12-10",
+      "endDate": "2026-12-12",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-12-10",
+          "events": [
+            {
+              "id": "c1c78440-a0f6-42ef-893d-414565b7492f",
+              "name": "Welcome Dinner",
+              "time": "19:00",
+              "venue": "Palace Lawn"
+            },
+            {
+              "id": "fc0ad522-5fd9-4a32-abac-cd238a4d6532",
+              "name": "Mehndi",
+              "time": "21:00",
+              "venue": "Garden"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-12-11",
+          "events": [
+            {
+              "id": "bb56b581-26d2-41e3-b108-f2b52a9ca92e",
+              "name": "Haldi Ceremony",
+              "time": "10:00",
+              "venue": "Courtyard"
+            },
+            {
+              "id": "60e95906-7b72-48ab-ab48-da71cd881801",
+              "name": "Sangeet Night",
+              "time": "19:00",
+              "venue": "Grand Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-12-12",
+          "events": [
+            {
+              "id": "187d7083-6338-4441-8f64-bc9a62d4ac40",
+              "name": "Wedding Ceremony",
+              "time": "18:00",
+              "venue": "Royal Hall"
+            },
+            {
+              "id": "852a6d96-2341-4617-8583-57525e18abee",
+              "name": "Reception",
+              "time": "20:00",
+              "venue": "Banquet"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
