@@ -31,6 +31,21 @@ export default function HostPage() {
   const [guestEmails, setGuestEmails] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingInvites, setIsSendingInvites] = useState(false);
+  const [showMiniBot, setShowMiniBot] = useState(false);
+
+  // Show mini bot after a delay
+  useEffect(() => {
+    const hasSeenHostTip = localStorage.getItem('shaadi-host-tip-seen');
+    if (!hasSeenHostTip) {
+      const timer = setTimeout(() => setShowMiniBot(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleDismissMiniBot = () => {
+    setShowMiniBot(false);
+    localStorage.setItem('shaadi-host-tip-seen', 'true');
+  };
 
   // Day management
   const addDay = () => {
