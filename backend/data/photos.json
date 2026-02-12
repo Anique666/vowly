@@ -8,6 +8,14 @@
       "url": "https://example.com/photos/sangeet-night.jpg",
       "caption": "Beautiful moments from Sangeet Night",
       "uploadedAt": "2026-02-12T15:27:49.233883"
+    },
+    {
+      "id": "73e60970-e2c7-4376-8847-2f775206d068",
+      "weddingId": "0b936780-7926-4e99-ac13-17e269130cd6",
+      "filename": "f7010211-d48f-4cf5-b72d-13f8e8d3f8c6.png",
+      "tags": [],
+      "caption": null,
+      "uploadedAt": "2026-02-12T23:57:31.306808+00:00"
     }
   ]
 }
