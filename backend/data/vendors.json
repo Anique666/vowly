@@ -1,3 +1,18 @@
 {
-  "vendors": []
+  "vendors": [
+    {
+      "id": "855c5f8c-84c6-4c1b-b8c3-afbe1ace4fda",
+      "weddingId": "0b936780-7926-4e99-ac13-17e269130cd6",
+      "name": "Royal Caterers",
+      "serviceType": "catering",
+      "email": "info@royalcaterers.com",
+      "phoneNumber": "+91-9876543210",
+      "attendingDays": [
+        false,
+        true,
+        true
+      ],
+      "notes": "Specializes in North Indian cuisine"
+    }
+  ]
 }
