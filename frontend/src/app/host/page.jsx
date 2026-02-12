@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Send, Save, Calendar, MapPin, Users, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { ShaadiMiniBot } from '@/components/onboarding/ShaadiBot';
 
 export default function HostPage() {
   const { toast } = useToast();
