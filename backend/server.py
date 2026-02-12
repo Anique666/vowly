@@ -524,6 +524,320 @@ async def delete_photo(photo_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============================================================================
+# EMAIL ENDPOINTS (RESEND INTEGRATION)
+# ============================================================================
+
+# Email Request Models
+class SendInvitesRequest(BaseModel):
+    weddingId: str
+    guestEmails: List[EmailStr]
+
+class SendThankYouRequest(BaseModel):
+    weddingId: str
+
+class EmailResponse(BaseModel):
+    status: str
+    message: str
+    emailsSent: int
+    failed: List[str] = Field(default_factory=list)
+
+def create_invite_email_html(wedding: Wedding, guest_email: str) -> str:
+    """Create HTML content for wedding invitation email"""
+    days_text = f"{len(wedding.days)} day" if len(wedding.days) == 1 else f"{len(wedding.days)} days"
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td align="center" style="padding: 40px 0;">
+                    <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <!-- Header with gold accent -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #f5c842 0%, #d4a017 100%); padding: 40px 30px; text-align: center;">
+                                <h1 style="margin: 0; color: #000000; font-size: 32px; font-weight: bold;">
+                                    You're Invited!
+                                </h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 40px 30px;">
+                                <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px;">
+                                    {wedding.name}
+                                </h2>
+                                
+                                <p style="margin: 0 0 15px 0; color: #666666; font-size: 16px; line-height: 1.5;">
+                                    We are delighted to invite you to our special celebration!
+                                </p>
+                                
+                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 30px 0;">
+                                    <tr>
+                                        <td style="padding: 15px; background-color: #f9f9f9; border-radius: 4px;">
+                                            <p style="margin: 0 0 10px 0; color: #333333; font-size: 14px; font-weight: bold;">
+                                                📍 Location
+                                            </p>
+                                            <p style="margin: 0; color: #666666; font-size: 14px;">
+                                                {wedding.location}
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr><td style="height: 10px;"></td></tr>
+                                    <tr>
+                                        <td style="padding: 15px; background-color: #f9f9f9; border-radius: 4px;">
+                                            <p style="margin: 0 0 10px 0; color: #333333; font-size: 14px; font-weight: bold;">
+                                                📅 Duration
+                                            </p>
+                                            <p style="margin: 0; color: #666666; font-size: 14px;">
+                                                {wedding.startDate} to {wedding.endDate} ({days_text})
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- RSVP Button -->
+                                <table role="presentation" style="margin: 30px 0;">
+                                    <tr>
+                                        <td align="center">
+                                            <a href="https://your-app-url.com/rsvp?weddingId={wedding.id}&email={guest_email}" 
+                                               style="display: inline-block; padding: 15px 40px; background-color: #f5c842; color: #000000; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
+                                                RSVP Now
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <p style="margin: 30px 0 0 0; color: #999999; font-size: 14px; line-height: 1.5;">
+                                    We look forward to celebrating with you!
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 20px 30px; background-color: #f9f9f9; text-align: center; border-top: 1px solid #eeeeee;">
+                                <p style="margin: 0; color: #999999; font-size: 12px;">
+                                    Wedding Management System
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    return html
+
+def create_thankyou_email_html(wedding: Wedding, guest_name: str) -> str:
+    """Create HTML content for thank you email"""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td align="center" style="padding: 40px 0;">
+                    <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #f5c842 0%, #d4a017 100%); padding: 40px 30px; text-align: center;">
+                                <h1 style="margin: 0; color: #000000; font-size: 32px; font-weight: bold;">
+                                    Thank You! 💛
+                                </h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 40px 30px;">
+                                <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px;">
+                                    Dear {guest_name},
+                                </h2>
+                                
+                                <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    Thank you for being part of our special celebration at <strong>{wedding.name}</strong>. 
+                                    Your presence made our wedding truly memorable!
+                                </p>
+                                
+                                <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    We are grateful for your love, support, and the wonderful memories we created together 
+                                    in {wedding.location}.
+                                </p>
+                                
+                                <table role="presentation" style="width: 100%; margin: 30px 0;">
+                                    <tr>
+                                        <td style="padding: 20px; background-color: #fff9e6; border-left: 4px solid #f5c842; border-radius: 4px;">
+                                            <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6; font-style: italic;">
+                                                "The best thing to hold onto in life is each other."
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <p style="margin: 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    With warmest regards,<br>
+                                    <strong>The Wedding Party</strong>
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="padding: 20px 30px; background-color: #f9f9f9; text-align: center; border-top: 1px solid #eeeeee;">
+                                <p style="margin: 0; color: #999999; font-size: 12px;">
+                                    Wedding Management System
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    return html
+
+@api_router.post("/email/send-invites", response_model=EmailResponse)
+async def send_wedding_invites(request: SendInvitesRequest):
+    """
+    Send wedding invitation emails to specified guests
+    - Fetches wedding information
+    - Sends personalized invites with RSVP link
+    """
+    try:
+        # Fetch wedding information
+        try:
+            wedding_data = get_from_collection('wedding.json', 'weddings', request.weddingId)
+            wedding = Wedding(**wedding_data)
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Wedding with id '{request.weddingId}' not found"
+            )
+        
+        # Send emails to each guest
+        failed_emails = []
+        successful_count = 0
+        
+        for guest_email in request.guestEmails:
+            try:
+                html_content = create_invite_email_html(wedding, guest_email)
+                
+                params = {
+                    "from": SENDER_EMAIL,
+                    "to": [guest_email],
+                    "subject": f"You're Invited: {wedding.name}",
+                    "html": html_content
+                }
+                
+                # Send email using asyncio.to_thread for non-blocking operation
+                email_response = await asyncio.to_thread(resend.Emails.send, params)
+                successful_count += 1
+                logger.info(f"Sent invitation to {guest_email} - Email ID: {email_response.get('id')}")
+                
+            except Exception as e:
+                logger.error(f"Failed to send invitation to {guest_email}: {str(e)}")
+                failed_emails.append(guest_email)
+        
+        return EmailResponse(
+            status="success" if successful_count > 0 else "failed",
+            message=f"Sent {successful_count} invitation(s) for {wedding.name}",
+            emailsSent=successful_count,
+            failed=failed_emails
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending invitations: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send invitations: {str(e)}")
+
+@api_router.post("/email/send-thankyou", response_model=EmailResponse)
+async def send_thankyou_emails(request: SendThankYouRequest):
+    """
+    Send thank you emails to all guests of a wedding
+    - Fetches wedding and guest information
+    - Sends personalized thank you emails
+    """
+    try:
+        # Fetch wedding information
+        try:
+            wedding_data = get_from_collection('wedding.json', 'weddings', request.weddingId)
+            wedding = Wedding(**wedding_data)
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Wedding with id '{request.weddingId}' not found"
+            )
+        
+        # Fetch all guests for the wedding
+        guests = list_collection('guests.json', 'guests', {"weddingId": request.weddingId})
+        
+        if not guests:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No guests found for wedding '{request.weddingId}'"
+            )
+        
+        # Send thank you emails
+        failed_emails = []
+        successful_count = 0
+        
+        for guest_data in guests:
+            guest = Guest(**guest_data)
+            
+            # Skip guests without email
+            if not guest.email:
+                logger.info(f"Skipping guest {guest.name} - no email address")
+                continue
+            
+            try:
+                html_content = create_thankyou_email_html(wedding, guest.name)
+                
+                params = {
+                    "from": SENDER_EMAIL,
+                    "to": [guest.email],
+                    "subject": f"Thank You from {wedding.name}",
+                    "html": html_content
+                }
+                
+                # Send email using asyncio.to_thread for non-blocking operation
+                email_response = await asyncio.to_thread(resend.Emails.send, params)
+                successful_count += 1
+                logger.info(f"Sent thank you to {guest.email} - Email ID: {email_response.get('id')}")
+                
+            except Exception as e:
+                logger.error(f"Failed to send thank you to {guest.email}: {str(e)}")
+                failed_emails.append(guest.email)
+        
+        return EmailResponse(
+            status="success" if successful_count > 0 else "failed",
+            message=f"Sent {successful_count} thank you email(s) for {wedding.name}",
+            emailsSent=successful_count,
+            failed=failed_emails
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending thank you emails: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send thank you emails: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
