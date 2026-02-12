@@ -214,18 +214,81 @@ async def delete_wedding(wedding_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Guest Endpoints
-@api_router.post("/guests", response_model=Guest)
-async def create_guest(guest_data: GuestCreate):
-    """Create a new guest"""
+# Guest Endpoints with Validation
+@api_router.post("/guest/rsvp", response_model=Guest, status_code=201)
+async def guest_rsvp(guest_data: GuestCreate):
+    """
+    Create guest RSVP with validation:
+    - Email format is validated by Pydantic
+    - attendingDays length must match number of wedding days
+    """
     try:
+        # Get the wedding to validate attendingDays length
+        try:
+            wedding = get_from_collection('wedding.json', 'weddings', guest_data.weddingId)
+            wedding_obj = Wedding(**wedding)
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Wedding with id '{guest_data.weddingId}' not found"
+            )
+        
+        # Validation: Check attendingDays length matches wedding days
+        num_wedding_days = len(wedding_obj.days)
+        num_attending_days = len(guest_data.attendingDays)
+        
+        if num_attending_days != num_wedding_days:
+            raise HTTPException(
+                status_code=400,
+                detail=f"attendingDays length ({num_attending_days}) must match number of wedding days ({num_wedding_days})"
+            )
+        
+        # Create guest
         guest = Guest(**guest_data.model_dump())
         result = append_to_collection('guests.json', 'guests', guest.model_dump())
-        logger.info(f"Created guest: {guest.id}")
+        logger.info(f"Created guest RSVP: {guest.id} - {guest.name} for wedding {guest.weddingId}")
+        
         return Guest(**result)
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error creating guest: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error creating guest RSVP: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@api_router.get("/guest/list", response_model=list[Guest])
+async def list_guests_by_wedding(weddingId: str):
+    """
+    Get all guests for a specific wedding
+    Query parameter: weddingId (required)
+    """
+    try:
+        # Validate wedding exists
+        try:
+            get_from_collection('wedding.json', 'weddings', weddingId)
+        except ValueError:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Wedding with id '{weddingId}' not found"
+            )
+        
+        # Get guests filtered by weddingId
+        guests = list_collection('guests.json', 'guests', {"weddingId": weddingId})
+        logger.info(f"Retrieved {len(guests)} guests for wedding {weddingId}")
+        
+        return [Guest(**g) for g in guests]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing guests: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# Legacy guest endpoints for compatibility
+@api_router.post("/guests", response_model=Guest)
+async def create_guest(guest_data: GuestCreate):
+    """Legacy endpoint - redirects to /guest/rsvp"""
+    return await guest_rsvp(guest_data)
 
 @api_router.get("/guests", response_model=List[Guest])
 async def list_guests(wedding_id: str = None):
