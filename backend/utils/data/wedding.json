@@ -1,0 +1,63 @@
+{
+  "wedding": [],
+  "weddings": [
+    {
+      "id": "0b936780-7926-4e99-ac13-17e269130cd6",
+      "name": "Sarah & John Wedding",
+      "location": "Mumbai, India",
+      "startDate": "2026-06-15",
+      "endDate": "2026-06-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-06-15",
+          "events": [
+            {
+              "id": "897cfc63-4e7c-45fc-89ce-a47c01da6198",
+              "name": "Mehendi",
+              "time": "18:00",
+              "venue": "Garden Hall"
+            },
+            {
+              "id": "c541571e-2c0e-42dd-b5e5-a716742bdf6a",
+              "name": "Sangeet",
+              "time": "20:00",
+              "venue": "Main Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-06-16",
+          "events": [
+            {
+              "id": "4b607c27-4a3d-4daa-b640-9ba3f7b6077d",
+              "name": "Haldi",
+              "time": "10:00",
+              "venue": "Poolside"
+            },
+            {
+              "id": "0a9385ca-3e9b-4e97-8871-d890f2b799c5",
+              "name": "Wedding Ceremony",
+              "time": "19:00",
+              "venue": "Grand Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 2,
+          "date": "2026-06-17",
+          "events": [
+            {
+              "id": "8a151d23-7b4f-4434-ae5c-2f8e5f2f1b89",
+              "name": "Reception",
+              "time": "19:00",
+              "venue": "Banquet Hall"
+            }
+          ]
+        }
+      ],
+      "vendors": []
+    }
+  ]
+}
