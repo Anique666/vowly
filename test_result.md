@@ -115,11 +115,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Existing endpoint, needs integration testing with frontend"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Successfully creates wedding with proper validation. Tested with 3-day wedding with multiple events. All required field validation working (name required, at least one day, at least one event). Returns proper wedding ID and data structure."
 
   - task: "POST /api/guest/rsvp endpoint"
     implemented: true
@@ -127,11 +130,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Existing endpoint, needs integration testing with frontend"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - RSVP endpoint working perfectly. Validates attendingDays length matches wedding days count. Email validation working. Creates guest records successfully. Tested with various scenarios including validation failures."
 
   - task: "POST /api/email/send-invites endpoint"
     implemented: true
@@ -139,11 +145,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Existing endpoint using Resend API, needs integration testing"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Email API endpoint functioning correctly. API responds properly with status, message, emailsSent count, and failed arrays. Note: Using dummy Resend API key so actual emails don't send, but endpoint structure and validation work correctly."
 
   - task: "GET /api/wedding/{wedding_id} endpoint"
     implemented: true
@@ -151,11 +160,14 @@ backend:
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Existing endpoint needed for RSVP page to fetch wedding details"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Wedding retrieval endpoint working correctly. Returns complete wedding data with all days, events, and metadata. Proper 404 error handling for non-existent wedding IDs. Data integrity maintained between create and retrieve operations."
 
 frontend:
   - task: "/host page - Wedding Setup Form"
