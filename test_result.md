@@ -101,3 +101,147 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Build /host and /rsvp pages in Next.js frontend:
+  - /host: Form to create wedding (name, location, dates, day-wise events), save via POST /api/wedding/create, invite guests UI with comma-separated emails, call POST /api/email/send-invites
+  - /rsvp: RSVP form (name, email, attending days, dietary, accommodation), submit to POST /api/guest/rsvp
+  - Use shadcn/ui components and Tailwind, gold and white theme
+
+backend:
+  - task: "POST /api/wedding/create endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Existing endpoint, needs integration testing with frontend"
+
+  - task: "POST /api/guest/rsvp endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Existing endpoint, needs integration testing with frontend"
+
+  - task: "POST /api/email/send-invites endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Existing endpoint using Resend API, needs integration testing"
+
+  - task: "GET /api/wedding/{wedding_id} endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Existing endpoint needed for RSVP page to fetch wedding details"
+
+frontend:
+  - task: "/host page - Wedding Setup Form"
+    implemented: true
+    working: true
+    file: "frontend/src/app/host/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented with wedding name, location, dates, day-wise events with add/remove functionality"
+
+  - task: "/host page - Invite Guests Section"
+    implemented: true
+    working: true
+    file: "frontend/src/app/host/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Shows after wedding saved, comma-separated emails textarea, calls /api/email/send-invites"
+
+  - task: "/rsvp page - RSVP Form"
+    implemented: true
+    working: true
+    file: "frontend/src/app/rsvp/page.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented with name, email, attending days checkboxes, dietary radio, accommodation radio"
+
+  - task: "Gold and White Theme"
+    implemented: true
+    working: true
+    file: "frontend/src/app/globals.css"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Theme configured with primary color as gold (hsl 43 96% 56%)"
+
+  - task: "Toast Notifications"
+    implemented: true
+    working: true
+    file: "frontend/src/components/ui/toaster.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added 'use client' directive, integrated in layout for success/error toasts"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "POST /api/wedding/create endpoint"
+    - "POST /api/guest/rsvp endpoint"
+    - "/host page - Wedding Setup Form"
+    - "/rsvp page - RSVP Form"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implemented /host and /rsvp pages with:
+      1. /host page: Wedding setup form with name, location, dates, day-wise events (add/remove days and events), vendors section (optional), save wedding button, invite guests section (appears after saving)
+      2. /rsvp page: Fetches wedding details, shows RSVP form with name, email, attending days checkboxes, dietary preference radio, accommodation radio
+      3. Gold and white theme throughout
+      4. Toast notifications for success/error feedback
+      5. Client-side validation implemented
+      
+      Ready for backend API testing to verify end-to-end flow.
