@@ -428,9 +428,23 @@ export default function HostPage() {
       // Success!
       const sentCount = data.emailsSent || 0;
       const failedEmails = data.failed || [];
+      const errorDetails = data.errorDetails || '';
       setInvitesSentCount(sentCount);
 
-      if (failedEmails.length > 0) {
+      if (failedEmails.length > 0 && sentCount === 0) {
+        // All emails failed
+        let errorMessage = `Failed to send invites.`;
+        if (errorDetails.includes('sandbox') || errorDetails.includes('verify a domain')) {
+          errorMessage = 'Email service is in sandbox mode. Please verify a domain on Resend to send to other recipients.';
+        } else if (errorDetails) {
+          errorMessage = errorDetails;
+        }
+        toast({
+          title: 'Email Delivery Issue',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      } else if (failedEmails.length > 0) {
         toast({
           title: 'Partial Success',
           description: `Sent ${sentCount} invite(s). Failed to send to: ${failedEmails.join(', ')}`,
