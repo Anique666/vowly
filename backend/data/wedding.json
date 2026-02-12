@@ -702,6 +702,40 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "7b77edaa-9b55-4bfc-9c08-87ef8b45a9c8",
+      "name": "Test Wedding Mumbai",
+      "location": "Mumbai, India",
+      "startDate": "2026-03-15",
+      "endDate": "2026-03-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-03-15",
+          "events": [
+            {
+              "id": "bdff2f4e-9440-452a-ae15-fc42a5f7f82b",
+              "name": "Mehendi",
+              "time": "14:00",
+              "venue": "Garden Hall"
+            }
+          ]
+        },
+        {
+          "dayIndex": 1,
+          "date": "2026-03-16",
+          "events": [
+            {
+              "id": "221e276d-2fd6-451a-9d59-b13d74135594",
+              "name": "Sangeet",
+              "time": "18:00",
+              "venue": "Banquet Hall"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
