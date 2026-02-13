@@ -341,6 +341,18 @@
         true
       ],
       "notes": null
+    },
+    {
+      "id": "aac1f64c-da87-4a12-aa0c-c06c26c474e7",
+      "weddingId": "ef5489fe-8ede-4c46-af18-5513aa744671",
+      "name": "Taste Buds Catering",
+      "serviceType": "catering",
+      "email": "info@tastebudscatering.com",
+      "phoneNumber": "080 2550 1111",
+      "attendingDays": [
+        true
+      ],
+      "notes": null
     }
   ]
 }

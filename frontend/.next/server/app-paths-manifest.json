@@ -1,12 +1,12 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/api/health/route": "app/api/health/route.js",
-  "/auth/organizer/page": "app/auth/organizer/page.js",
+  "/guestdashboard/page": "app/guestdashboard/page.js",
   "/auth/guest/page": "app/auth/guest/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/guestdashboard/page": "app/guestdashboard/page.js",
   "/page": "app/page.js",
-  "/postwedding/page": "app/postwedding/page.js",
+  "/host/page": "app/host/page.js",
+  "/auth/organizer/page": "app/auth/organizer/page.js",
   "/rsvp/page": "app/rsvp/page.js",
-  "/host/page": "app/host/page.js"
+  "/postwedding/page": "app/postwedding/page.js"
 }

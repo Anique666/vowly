@@ -936,6 +936,52 @@
       ],
       "vendors": [],
       "creatorId": "27d1e48d-1934-4848-9d90-93ce93e51694"
+    },
+    {
+      "id": "ef5489fe-8ede-4c46-af18-5513aa744671",
+      "name": "Anish weds Anish",
+      "location": "Bengaluru Palace, Bengaluru",
+      "startDate": "2026-11-16",
+      "endDate": "2026-11-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-11-16",
+          "events": [
+            {
+              "id": "ffd41a9c-e61a-474c-87dc-811831aab6da",
+              "name": "a",
+              "time": "12:34",
+              "venue": "b"
+            }
+          ]
+        }
+      ],
+      "vendors": [],
+      "creatorId": "27d1e48d-1934-4848-9d90-93ce93e51694"
+    },
+    {
+      "id": "dff78999-e98a-429f-848b-fdd0c2861ea0",
+      "name": "Anish weds Anish",
+      "location": "Bengaluru Palace, Bengaluru",
+      "startDate": "2026-02-16",
+      "endDate": "2026-02-21",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "22026-02-16",
+          "events": [
+            {
+              "id": "90a99aca-47ef-4b93-9c02-92372ae872ed",
+              "name": "haldi",
+              "time": "12:39",
+              "venue": "geound"
+            }
+          ]
+        }
+      ],
+      "vendors": [],
+      "creatorId": "27d1e48d-1934-4848-9d90-93ce93e51694"
     }
   ]
 }
