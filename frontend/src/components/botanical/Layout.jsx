@@ -3,17 +3,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, LogOut, Image } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export function BotanicalHeader() {
   const pathname = usePathname();
+  const { user, isAuthenticated, isOrganizer, isGuest, logout } = useAuth();
   
-  const navLinks = [
+  const organizerLinks = [
     { href: '/host', label: 'Setup' },
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/guestdashboard', label: 'Guests' },
+    { href: '/postwedding', label: 'Album' },
+  ];
+
+  const guestLinks = [
+    { href: '/guestdashboard', label: 'Dashboard' },
+    { href: '/postwedding', label: 'Album' },
     { href: '/rsvp', label: 'RSVP' },
   ];
+
+  const navLinks = isOrganizer ? organizerLinks : isGuest ? guestLinks : [];
 
   const isActive = (href) => pathname === href;
 
@@ -29,42 +38,63 @@ export function BotanicalHeader() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
             </svg>
           </div>
-          <span className="text-lg font-serif font-medium text-foreground group-hover:text-primary transition-colors">
-            Wedding Ops
+          <span className="text-xl font-serif font-medium text-foreground group-hover:text-primary transition-colors tracking-tight">
+            vowly
           </span>
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm font-medium transition-colors ${
-                isActive(link.href)
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {isAuthenticated && navLinks.length > 0 && (
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors ${
+                  isActive(link.href)
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
-        {/* CTA Button */}
-        <Link href="/host">
-          <motion.button
-            className="btn-botanical text-sm"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            Get Started
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
-        </Link>
+        {/* Right Section */}
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <>
+              <span className="hidden md:inline text-sm text-muted-foreground">
+                {user?.name}
+              </span>
+              <motion.button
+                onClick={logout}
+                className="btn-botanical-outline text-sm py-2 px-4"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden md:inline">Logout</span>
+              </motion.button>
+            </>
+          ) : (
+            <Link href="/auth/organizer">
+              <motion.button
+                className="btn-botanical text-sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Get Started
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </Link>
+          )}
+        </div>
       </div>
     </motion.header>
   );
@@ -80,20 +110,25 @@ export function BotanicalFooter() {
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
                 </svg>
               </div>
-              <span className="text-lg font-serif font-medium">Wedding Ops</span>
+              <span className="text-xl font-serif font-medium tracking-tight">vowly</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-              Elegant AI-powered wedding planning for modern couples. Create unforgettable celebrations with ease.
+              Plan your perfect wedding with AI-powered assistance. Create unforgettable celebrations with ease.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-medium mb-4 text-sm uppercase tracking-wider text-foreground">Quick Links</h4>
+            <h4 className="font-medium mb-4 text-sm uppercase tracking-wider text-foreground">For Organizers</h4>
             <ul className="space-y-3">
+              <li>
+                <Link href="/auth/organizer" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Get Started
+                </Link>
+              </li>
               <li>
                 <Link href="/host" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Create Wedding
@@ -104,26 +139,27 @@ export function BotanicalFooter() {
                   Dashboard
                 </Link>
               </li>
-              <li>
-                <Link href="/rsvp" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  RSVP
-                </Link>
-              </li>
             </ul>
           </div>
 
           {/* Features */}
           <div>
-            <h4 className="font-medium mb-4 text-sm uppercase tracking-wider text-foreground">Features</h4>
+            <h4 className="font-medium mb-4 text-sm uppercase tracking-wider text-foreground">For Guests</h4>
             <ul className="space-y-3">
               <li>
-                <span className="text-sm text-muted-foreground">AI Assistant</span>
+                <Link href="/auth/guest" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Guest Login
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-muted-foreground">Guest Management</span>
+                <Link href="/rsvp" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  RSVP
+                </Link>
               </li>
               <li>
-                <span className="text-sm text-muted-foreground">Vendor Coordination</span>
+                <Link href="/guestdashboard" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Guest Portal
+                </Link>
               </li>
             </ul>
           </div>
@@ -132,7 +168,7 @@ export function BotanicalFooter() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">
-            &copy; 2026 Wedding Ops. All rights reserved.
+            &copy; 2026 Vowly. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <a href="#" className="text-xs text-muted-foreground hover:text-primary transition-colors">
