@@ -31,6 +31,7 @@ from utils.file_utils import (
 from utils.maileroo import send_email, test_maileroo_connection, get_email_config
 from routes.ai_routes import ai_router
 from routes.photo_routes import photo_router
+from routes.auth_routes import auth_router
 
 
 ROOT_DIR = Path(__file__).parent
