@@ -919,6 +919,7 @@ async def serve_photo_file(wedding_id: str, filename: str):
 app.include_router(api_router)
 app.include_router(ai_router)
 app.include_router(photo_router)
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
