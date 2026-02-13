@@ -1,7 +1,7 @@
-# AI Wedding Ops - Product Requirements Document
+# Vowly - Product Requirements Document
 
 ## Overview
-AI Wedding Ops is a full-stack wedding planning application with AI-powered assistance for managing guests, vendors, and multi-day events.
+Vowly (formerly "AI Wedding Ops") is a full-stack wedding planning application with AI-powered assistance for managing guests, vendors, and multi-day events. The application features local JWT-based authentication for organizers and guests.
 
 ## Tech Stack
 - **Frontend**: Next.js 14, React, TypeScript/JavaScript, Tailwind CSS, shadcn/ui, Framer Motion
@@ -9,6 +9,8 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
 - **Database**: MongoDB
 - **AI/LLM**: Groq API (Mixtral)
 - **Email**: Maileroo API (transactional emails)
+- **Authentication**: Local JWT-based auth with session management
+
 
 ## Core Features
 
@@ -72,6 +74,15 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
 - `POST /api/ai/planner/set-details` - Set wedding context
 - `POST /api/ai/planner/search-vendor` - Get vendor suggestions
 - `POST /api/ai/chat` - Chat with AI assistant
+
+### Authentication
+- `POST /api/auth/signup` - Register new user (organizer/guest)
+- `POST /api/auth/login` - Login with credentials
+- `GET /api/auth/me` - Get current authenticated user
+- `POST /api/auth/logout` - Logout and invalidate session
+- `POST /api/auth/validate` - Validate session token
+- `POST /api/auth/update-wedding` - Link wedding to organizer account
+
 - `POST /api/ai/guest-day-suggestions` - Guest tips
 
 ### Email
@@ -114,6 +125,62 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
 - `GET /api/photo-tags` - Get available tags
 - `DELETE /api/photos/{id}` - Delete a photo
 - `GET /api/photos/file/{wedding_id}/{filename}` - Serve photo files
+
+### February 13, 2026
+- ✅ **"Vowly" Rebrand** - Updated all branding from "Wedding Planner" to "vowly"
+  - Updated header/footer components
+  - Updated page titles and metadata
+  - Updated landing page with new branding
+  
+- ✅ **Local Authentication System** (JWT-based)
+  - Created `/app/backend/routes/auth_routes.py` with full auth flow
+  - User data stored in `/app/backend/data/users.json` (organizers & guests)
+  - Session-based token management (24-hour expiry)
+  - Password hashing with SHA-256
+  - Auth endpoints: signup, login, logout, me, validate, update-wedding
+  
+- ✅ **Frontend Authentication**
+  - Created `AuthContext` (`/app/frontend/src/context/AuthContext.jsx`)
+  - Created `useRequireAuth` hook for route protection
+  - Auth pages: `/auth/organizer` and `/auth/guest`
+  - Login/Signup forms with mode toggle
+  - Session persistence via localStorage
+  
+- ✅ **Landing Page with Three CTAs**
+  - "Get started as organizer" → `/auth/organizer?mode=signup`
+  - "Continue as organizer" → `/auth/organizer?mode=login`
+  - "RSVP as a guest" → `/auth/guest`
+  
+- ✅ **Redirect Logic**
+  - New organizers → `/host` (create wedding)
+  - Existing organizers with wedding → `/dashboard`
+  - Existing organizers without wedding → `/host`
+  - Guests → `/guestdashboard`
+  
+- ✅ **Route Protection**
+  - `/host` - Protected (organizer only)
+  - `/dashboard` - Protected (organizer only)
+  - `/guestdashboard` - Protected (guest only)
+  - Unauthenticated users redirected to appropriate auth page
+  
+- ✅ **Album Button Integration**
+  - Added "Album" button on organizer dashboard
+  - Added "Album" button on guest dashboard
+  - Both link to `/postwedding` page
+  
+- ✅ **UI/UX Polish with Framer Motion**
+  - Page transitions with motion components
+  - Button hover animations (scale, translate)
+  - Smooth fade-in/fade-up animations
+  - Staggered children animations on landing page
+  - Form field animations
+  
+- ✅ **User-Wedding Association**
+  - Created wedding is automatically linked to organizer account
+  - Wedding ID stored in user profile
+  - Backend endpoint to update user's wedding association
+  - Frontend calls `updateWeddingId()` after wedding creation
+
 
 ## Known Limitations
 - Twilio SMS integration not configured (missing API keys)
