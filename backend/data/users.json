@@ -37,6 +37,15 @@
       "role": "guest",
       "weddingId": null,
       "createdAt": "2026-02-13T01:11:51.126193+00:00"
+    },
+    {
+      "id": "6b2c6201-d783-4837-8b13-10f9e6c8677a",
+      "email": "bob@guest.com",
+      "name": "Bob Guest",
+      "password": "99a37f0833f93d6d7bd578d1b736688e126933a613db666126de41b004cc99d7",
+      "role": "guest",
+      "weddingId": null,
+      "createdAt": "2026-02-13T01:12:34.891653+00:00"
     }
   ]
 }
