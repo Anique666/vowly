@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useRequireAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 import { 
   Calendar, Users, Utensils, Home, Send, 
   ChevronRight, Loader2, Bot, User, X, 
   AlertTriangle, Edit, CheckCircle,
-  Timer, Clock, PartyPopper, MessageCircle, Building
+  Timer, Clock, PartyPopper, MessageCircle, Building, Camera
 } from 'lucide-react';
 import { BotanicalHeader, BotanicalFooter } from '@/components/botanical/Layout';
 
@@ -42,6 +44,9 @@ const calculateCountdown = (targetDate) => {
 };
 
 export default function DashboardPage() {
+  // Route protection - require organizer auth
+  const { loading: authLoading } = useRequireAuth('organizer');
+  
   const { toast } = useToast();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
   const chatEndRef = useRef(null);
