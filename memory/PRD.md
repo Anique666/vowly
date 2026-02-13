@@ -99,6 +99,13 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
   - Lightbox for full-size viewing
   - Photo deletion
 
+- ✅ **Maileroo Email Integration** (replaced Resend)
+  - Created `/app/backend/utils/maileroo.py` utility module
+  - Unified `send_email()` function for all email sending
+  - Environment variables: `MAILEROO_API_KEY`, `MAILEROO_FROM_EMAIL`
+  - Health check endpoint: `GET /api/email/health`
+  - Updated invite and thank-you email endpoints
+
 ### Photo Gallery API Endpoints
 - `POST /api/photos/upload` - Upload photos (multipart form-data)
 - `POST /api/photos/tag` - Add/update photo tags
