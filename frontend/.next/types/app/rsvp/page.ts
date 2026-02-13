@@ -1,4 +1,4 @@
-// File: /app/frontend/src/app/rsvp/page.jsx
+// File: C:\Users\anish\vowly\frontend\src\app\rsvp\page.jsx
 import * as entry from '../../../../src/app/rsvp/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

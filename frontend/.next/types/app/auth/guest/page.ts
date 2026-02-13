@@ -1,4 +1,4 @@
-// File: /app/frontend/src/app/auth/guest/page.jsx
+// File: C:\Users\anish\vowly\frontend\src\app\auth\guest\page.jsx
 import * as entry from '../../../../../src/app/auth/guest/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

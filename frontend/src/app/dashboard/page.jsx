@@ -87,7 +87,19 @@ export default function DashboardPage() {
     const endDateTime = endDate ? new Date(endDate.getTime() + 24 * 60 * 60 * 1000 - 1) : null;
 
     if (now < startDate) {
-      const result = calculateCountdown(startDate);
+      // Target the first event's actual time on the start date, not midnight
+      let targetDateTime = startDate;
+      if (wedding.days && wedding.days.length > 0) {
+        const firstDay = wedding.days[0];
+        const firstEvent = firstDay.events?.[0];
+        if (firstEvent?.time) {
+          const eventDateTime = new Date(firstDay.date + 'T' + firstEvent.time + ':00');
+          if (!isNaN(eventDateTime.getTime())) {
+            targetDateTime = eventDateTime;
+          }
+        }
+      }
+      const result = calculateCountdown(targetDateTime);
       if (result) { setCountdown(result); setCountdownLabel('Wedding starts in'); setCountdownVenue(''); }
       return;
     }
@@ -136,7 +148,10 @@ export default function DashboardPage() {
   const fetchWeddings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/api/weddings`);
+      const storedAuth = localStorage.getItem('vowly_auth');
+      const authToken = storedAuth ? JSON.parse(storedAuth).token : null;
+      const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+      const response = await fetch(`${backendUrl}/api/weddings`, { headers });
       if (!response.ok) throw new Error('Failed to fetch weddings');
       const data = await response.json();
       setWeddings(data);
@@ -170,6 +185,17 @@ export default function DashboardPage() {
   const getVendorStats = () => {
     const confirmed = vendors.filter(v => v.attendingDays && v.attendingDays.some(d => d === true)).length;
     return { confirmed, total: vendors.length };
+  };
+
+  const getVendorsForDay = (dayIndex) => {
+    return vendors.filter(v => v.attendingDays && v.attendingDays[dayIndex] === true);
+  };
+
+  const getVendorDayLabels = (vendor) => {
+    if (!vendor.attendingDays || !wedding?.days) return [];
+    return vendor.attendingDays
+      .map((active, idx) => active ? `Day ${idx + 1}` : null)
+      .filter(Boolean);
   };
 
   const openVendorComplaint = (vendor) => { 
@@ -430,8 +456,8 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-primary/10"><Building className="w-5 h-5 text-primary" /></div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Vendors</p>
-                  <p className="text-2xl font-serif font-semibold">{vendorStats.confirmed}<span className="text-sm text-primary ml-1">confirmed</span></p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Vendors Today</p>
+                  <p className="text-2xl font-serif font-semibold">{getVendorsForDay(selectedDayIndex).length}<span className="text-base text-muted-foreground">/{vendors.length}</span></p>
                 </div>
               </div>
             </motion.div>
@@ -465,22 +491,35 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Building className="w-5 h-5 text-primary" />
-                  <h3 className="font-serif text-lg">Vendors</h3>
+                  <h3 className="font-serif text-lg">Vendors for Day {selectedDayIndex + 1}</h3>
                 </div>
+                <span className="text-xs text-muted-foreground">{getVendorsForDay(selectedDayIndex).length} of {vendors.length} vendors</span>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                {vendors.map((vendor, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl border border-border">
-                    <div>
-                      <p className="font-medium">{vendor.name || 'Unnamed Vendor'}</p>
-                      <p className="text-sm text-muted-foreground capitalize">{vendor.serviceType}</p>
+              {getVendorsForDay(selectedDayIndex).length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground">
+                  <Building className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
+                  <p className="text-sm">No vendors assigned to Day {selectedDayIndex + 1}</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {getVendorsForDay(selectedDayIndex).map((vendor, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl border border-border">
+                      <div>
+                        <p className="font-medium">{vendor.name || 'Unnamed Vendor'}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{vendor.serviceType}</p>
+                        <div className="flex gap-1 mt-1.5 flex-wrap">
+                          {getVendorDayLabels(vendor).map((label, i) => (
+                            <span key={i} className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">{label}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={() => openVendorComplaint(vendor)} className="btn-botanical-outline text-xs py-1.5 px-3">
+                        <AlertTriangle className="w-3 h-3" /> Report Issue
+                      </button>
                     </div>
-                    <button onClick={() => openVendorComplaint(vendor)} className="btn-botanical-outline text-xs py-1.5 px-3">
-                      <AlertTriangle className="w-3 h-3" /> Report Issue
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </div>

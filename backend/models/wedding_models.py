@@ -30,6 +30,7 @@ class Wedding(BaseModel):
     endDate: str
     days: List[Day] = Field(default_factory=list)
     vendors: List[WeddingVendor] = Field(default_factory=list)
+    creatorId: Optional[str] = None
 
 class WeddingCreate(BaseModel):
     name: str

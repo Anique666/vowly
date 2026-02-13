@@ -3,10 +3,10 @@
   "/api/health/route": "app/api/health/route.js",
   "/auth/guest/page": "app/auth/guest/page.js",
   "/auth/organizer/page": "app/auth/organizer/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/guestdashboard/page": "app/guestdashboard/page.js",
   "/page": "app/page.js",
   "/host/page": "app/host/page.js",
+  "/rsvp/page": "app/rsvp/page.js",
   "/postwedding/page": "app/postwedding/page.js",
-  "/rsvp/page": "app/rsvp/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/guestdashboard/page": "app/guestdashboard/page.js"
 }

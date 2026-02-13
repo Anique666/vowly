@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -31,7 +32,7 @@ from utils.file_utils import (
 from utils.maileroo import send_email, test_maileroo_connection, get_email_config
 from routes.ai_routes import ai_router
 from routes.photo_routes import photo_router
-from routes.auth_routes import auth_router
+from routes.auth_routes import auth_router, get_session, security
 
 
 ROOT_DIR = Path(__file__).parent
@@ -107,14 +108,22 @@ async def get_status_checks():
 
 # Wedding Endpoints with Validation
 @api_router.post("/wedding/create", response_model=Wedding, status_code=201)
-async def create_wedding(wedding_data: WeddingCreate):
+async def create_wedding(wedding_data: WeddingCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Create a new wedding with validation:
     - Wedding name is required
     - At least one day required
     - At least one event required
+    - Wedding is bound to the authenticated creator
     """
     try:
+        # Get creator from auth token
+        creator_id = None
+        if credentials:
+            session = get_session(credentials.credentials)
+            if session:
+                creator_id = session["userId"]
+        
         # Validation: Check wedding name
         if not wedding_data.name or not wedding_data.name.strip():
             raise HTTPException(
@@ -137,10 +146,12 @@ async def create_wedding(wedding_data: WeddingCreate):
                 detail="At least one event is required"
             )
         
-        # Create wedding object
-        wedding = Wedding(**wedding_data.model_dump())
+        # Create wedding object with creatorId
+        wedding_dict = wedding_data.model_dump()
+        wedding_dict["creatorId"] = creator_id
+        wedding = Wedding(**wedding_dict)
         result = append_to_collection('wedding.json', 'weddings', wedding.model_dump())
-        logger.info(f"Created wedding: {wedding.id} - {wedding.name}")
+        logger.info(f"Created wedding: {wedding.id} - {wedding.name} by creator {creator_id}")
         
         return Wedding(**result)
         
@@ -167,15 +178,26 @@ async def get_wedding_by_id(wedding_id: str):
 
 # Keep existing wedding endpoints for compatibility
 @api_router.post("/weddings", response_model=Wedding)
-async def create_wedding_legacy(wedding_data: WeddingCreate):
+async def create_wedding_legacy(wedding_data: WeddingCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Legacy endpoint - redirects to /wedding/create"""
-    return await create_wedding(wedding_data)
+    return await create_wedding(wedding_data, credentials)
 
 @api_router.get("/weddings", response_model=List[Wedding])
-async def list_weddings():
-    """List all weddings"""
+async def list_weddings(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """List weddings belonging to the authenticated user"""
     try:
         weddings = list_collection('wedding.json', 'weddings')
+        
+        # Filter by creator if authenticated
+        creator_id = None
+        if credentials:
+            session = get_session(credentials.credentials)
+            if session:
+                creator_id = session["userId"]
+        
+        if creator_id:
+            weddings = [w for w in weddings if w.get("creatorId") == creator_id]
+        
         return [Wedding(**w) for w in weddings]
     except Exception as e:
         logger.error(f"Error listing weddings: {e}")

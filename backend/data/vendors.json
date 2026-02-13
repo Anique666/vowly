@@ -329,6 +329,18 @@
         true
       ],
       "notes": null
+    },
+    {
+      "id": "a324c588-3068-4773-b2e1-0fa439ae1a88",
+      "weddingId": "d4683dd6-a933-445b-a1cd-3a107b8511ed",
+      "name": "Anish Kasetty",
+      "serviceType": "catering",
+      "email": "anishkasetty@gmail.com",
+      "phoneNumber": "8088232862",
+      "attendingDays": [
+        true
+      ],
+      "notes": null
     }
   ]
 }

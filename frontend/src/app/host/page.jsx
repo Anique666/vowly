@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -58,10 +59,22 @@ export default function HostPage() {
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [suggestionLocation, setSuggestionLocation] = useState('');
   const [suggestionError, setSuggestionError] = useState('');
+  const [suggestionPhase, setSuggestionPhase] = useState('form'); // 'form' | 'loading' | 'results'
+  const [suggestionTheme, setSuggestionTheme] = useState('');
+  const [suggestionBudget, setSuggestionBudget] = useState('');
+  const [suggestionGuests, setSuggestionGuests] = useState('');
 
   // Day management
-  const addDay = () => setDays([...days, { date: '', events: [{ name: '', time: '', venue: '' }] }]);
-  const removeDay = (dayIndex) => { if (days.length > 1) setDays(days.filter((_, i) => i !== dayIndex)); };
+  const addDay = () => {
+    setDays([...days, { date: '', events: [{ name: '', time: '', venue: '' }] }]);
+    setVendors(vendors.map(v => ({ ...v, attendingDays: [...(v.attendingDays || days.map(() => true)), true] })));
+  };
+  const removeDay = (dayIndex) => {
+    if (days.length > 1) {
+      setDays(days.filter((_, i) => i !== dayIndex));
+      setVendors(vendors.map(v => ({ ...v, attendingDays: (v.attendingDays || days.map(() => true)).filter((_, i) => i !== dayIndex) })));
+    }
+  };
   const updateDayDate = (dayIndex, date) => { const newDays = [...days]; newDays[dayIndex].date = date; setDays(newDays); };
 
   // Event management
@@ -70,9 +83,17 @@ export default function HostPage() {
   const updateEvent = (dayIndex, eventIndex, field, value) => { const newDays = [...days]; newDays[dayIndex].events[eventIndex][field] = value; setDays(newDays); };
 
   // Vendor management
-  const addVendor = () => setVendors([...vendors, { role: 'catering', name: '', phone: '', email: '' }]);
+  const addVendor = () => setVendors([...vendors, { role: 'catering', name: '', phone: '', email: '', attendingDays: days.map(() => true) }]);
   const removeVendor = (index) => setVendors(vendors.filter((_, i) => i !== index));
   const updateVendor = (index, field, value) => { const newVendors = [...vendors]; newVendors[index] = { ...newVendors[index], [field]: value }; setVendors(newVendors); };
+  const toggleVendorDay = (vendorIndex, dayIndex) => {
+    const newVendors = [...vendors];
+    const currentDays = newVendors[vendorIndex].attendingDays || days.map(() => true);
+    const updated = [...currentDays];
+    updated[dayIndex] = !updated[dayIndex];
+    newVendors[vendorIndex] = { ...newVendors[vendorIndex], attendingDays: updated };
+    setVendors(newVendors);
+  };
 
   // Guest management
   const addGuest = () => setGuests([...guests, { name: '', email: '' }]);
@@ -91,7 +112,7 @@ export default function HostPage() {
     return trimmed.length >= 2 && /[a-zA-Z]/.test(trimmed);
   };
 
-  const handleSuggestVendors = async () => {
+  const handleSuggestVendors = () => {
     if (!isValidLocation(location)) {
       toast({ title: 'Location Required', description: 'Please enter a valid location to get vendor suggestions.', variant: 'destructive' });
       return;
@@ -99,52 +120,54 @@ export default function HostPage() {
     const city = extractCity(location);
     setSuggestionLocation(city);
     setSuggestionError('');
-    setIsLoadingSuggestions(true);
     setSuggestedVendors([]);
+    setSuggestionPhase('form');
     setShowSuggestionsModal(true);
-    debugLog('Starting vendor suggestion', { location, city });
+  };
+
+  const handleSubmitSuggestionForm = async () => {
+    setSuggestionPhase('loading');
+    setIsLoadingSuggestions(true);
+    setSuggestionError('');
+    setSuggestedVendors([]);
 
     try {
-      const setDetailsRes = await fetch(`${backendUrl}/api/ai/planner/set-details`, {
+      const response = await fetch(`${backendUrl}/api/ai/planner/suggest-vendors`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: city }),
+        body: JSON.stringify({
+          location: suggestionLocation,
+          theme: suggestionTheme,
+          budget: suggestionBudget,
+          estimatedGuests: suggestionGuests,
+        }),
       });
-      if (!setDetailsRes.ok) throw new Error('Failed to set location details');
-
-      const vendorTypes = ['catering', 'photography', 'decoration'];
-      const suggestions = [];
-      for (const type of vendorTypes) {
-        const response = await fetch(`${backendUrl}/api/ai/planner/search-vendor`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ vendor_type: type }),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const result = data.result || '';
-          const isRelevant = result.toLowerCase().includes(city.toLowerCase());
-          if (result && result.trim().length > 20) {
-            suggestions.push({ type, suggestions: result, isRelevant });
-          }
-        }
+      if (!response.ok) throw new Error('Failed to get suggestions');
+      const data = await response.json();
+      const categories = data.categories || [];
+      const nonEmpty = categories.filter(c => c.vendors && c.vendors.length > 0);
+      if (nonEmpty.length === 0) {
+        setSuggestionError(`No vendor suggestions found for ${suggestionLocation}. Try a different location.`);
       }
-      if (suggestions.length === 0) {
-        setSuggestionError(`No vendor suggestions found for ${city}. Try a major city.`);
-      }
-      setSuggestedVendors(suggestions);
+      setSuggestedVendors(nonEmpty);
+      setSuggestionPhase('results');
     } catch (err) {
-      debugLog('Vendor suggestion error', { error: err.message });
       setSuggestionError(`Failed to get vendor suggestions: ${err.message}`);
-      toast({ title: 'Error', description: `Failed to get vendor suggestions: ${err.message}`, variant: 'destructive' });
+      setSuggestionPhase('results');
     } finally {
       setIsLoadingSuggestions(false);
     }
   };
 
-  const addSuggestedVendor = (type) => {
-    setVendors([...vendors, { role: type, name: '', phone: '', email: '' }]);
-    toast({ title: 'Vendor Added', description: `A ${type} vendor slot has been added.` });
+  const addSuggestedVendor = (type, vendor) => {
+    setVendors([...vendors, {
+      role: type,
+      name: vendor?.name || '',
+      phone: (vendor?.phone && vendor.phone !== 'Not available') ? vendor.phone : '',
+      email: (vendor?.email && vendor.email !== 'Not available') ? vendor.email : '',
+      attendingDays: days.map(() => true),
+    }]);
+    toast({ title: 'Vendor Added', description: `${vendor?.name || type} has been added.` });
   };
 
   const validateForm = () => {
@@ -175,9 +198,14 @@ export default function HostPage() {
           events: day.events.map(event => ({ name: event.name, time: event.time, venue: event.venue })),
         })),
       };
+      const storedAuth = localStorage.getItem('vowly_auth');
+      const authToken = storedAuth ? JSON.parse(storedAuth).token : null;
       const response = await fetch(`${backendUrl}/api/wedding/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       const data = await response.json();
@@ -197,7 +225,7 @@ export default function HostPage() {
             body: JSON.stringify({
               weddingId: data.id, name: vendor.name, serviceType: vendor.role,
               email: vendor.email || null, phoneNumber: vendor.phone || null,
-              attendingDays: days.map(() => true),
+              attendingDays: vendor.attendingDays || days.map(() => true),
             }),
           });
         }
@@ -476,34 +504,60 @@ export default function HostPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
-                      className="grid grid-cols-12 gap-3 items-center p-3 bg-secondary/50 rounded-xl border border-border"
+                      className="p-3 bg-secondary/50 rounded-xl border border-border space-y-3"
                     >
-                      <div className="col-span-3">
-                        <Select value={vendor.role} onValueChange={(v) => updateVendor(index, 'role', v)}>
-                          <SelectTrigger className="input-botanical text-sm">
-                            <SelectValue placeholder="Role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {VENDOR_ROLES.map((role) => (
-                              <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="grid grid-cols-12 gap-3 items-center">
+                        <div className="col-span-3">
+                          <Select value={vendor.role} onValueChange={(v) => updateVendor(index, 'role', v)}>
+                            <SelectTrigger className="input-botanical text-sm">
+                              <SelectValue placeholder="Role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {VENDOR_ROLES.map((role) => (
+                                <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-3">
+                          <Input placeholder="Name" value={vendor.name} onChange={(e) => updateVendor(index, 'name', e.target.value)} className="input-botanical text-sm" />
+                        </div>
+                        <div className="col-span-2">
+                          <Input placeholder="Phone" value={vendor.phone} onChange={(e) => updateVendor(index, 'phone', e.target.value)} className="input-botanical text-sm" />
+                        </div>
+                        <div className="col-span-3">
+                          <Input type="email" placeholder="Email" value={vendor.email} onChange={(e) => updateVendor(index, 'email', e.target.value)} className="input-botanical text-sm" />
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          <button onClick={() => removeVendor(index)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="col-span-3">
-                        <Input placeholder="Name" value={vendor.name} onChange={(e) => updateVendor(index, 'name', e.target.value)} className="input-botanical text-sm" />
-                      </div>
-                      <div className="col-span-2">
-                        <Input placeholder="Phone" value={vendor.phone} onChange={(e) => updateVendor(index, 'phone', e.target.value)} className="input-botanical text-sm" />
-                      </div>
-                      <div className="col-span-3">
-                        <Input type="email" placeholder="Email" value={vendor.email} onChange={(e) => updateVendor(index, 'email', e.target.value)} className="input-botanical text-sm" />
-                      </div>
-                      <div className="col-span-1 flex justify-end">
-                        <button onClick={() => removeVendor(index)} className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {days.length > 0 && (
+                        <div className="flex items-center gap-2 pl-1">
+                          <span className="text-xs text-muted-foreground font-medium">Days:</span>
+                          <div className="flex gap-1.5 flex-wrap">
+                            {days.map((day, dayIdx) => {
+                              const isActive = (vendor.attendingDays || days.map(() => true))[dayIdx] ?? true;
+                              return (
+                                <button
+                                  key={dayIdx}
+                                  type="button"
+                                  onClick={() => toggleVendorDay(index, dayIdx)}
+                                  className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                                    isActive
+                                      ? 'bg-primary text-white'
+                                      : 'bg-secondary text-muted-foreground border border-border hover:border-primary/40'
+                                  }`}
+                                >
+                                  Day {dayIdx + 1}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </motion.div>
                   ))}
                   <button onClick={addVendor} className="btn-botanical-outline text-sm py-2 px-4">
@@ -591,50 +645,125 @@ export default function HostPage() {
 
       {/* Vendor Suggestions Modal */}
       <Dialog open={showSuggestionsModal} onOpenChange={setShowSuggestionsModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">Vendor Suggestions</DialogTitle>
+            <DialogTitle className="font-serif text-xl">AI Vendor Suggestions</DialogTitle>
             <DialogDescription className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" /> Suggestions near: <strong>{suggestionLocation || location}</strong>
+              <MapPin className="w-4 h-4 text-primary" /> Location: <strong>{suggestionLocation || location}</strong>
             </DialogDescription>
           </DialogHeader>
           
-          {isLoadingSuggestions ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              <span className="ml-3 text-muted-foreground">Finding vendors in {suggestionLocation}...</span>
-            </div>
-          ) : suggestionError ? (
-            <div className="text-center py-8">
-              <AlertCircle className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">{suggestionError}</p>
-            </div>
-          ) : suggestedVendors.length > 0 ? (
-            <div className="space-y-6">
-              {suggestedVendors.map((category, idx) => (
-                <div key={idx} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-serif font-medium capitalize text-lg">{category.type}</h4>
-                    <button onClick={() => addSuggestedVendor(category.type)} className="btn-botanical-outline text-xs py-1.5 px-3">
-                      <Plus className="w-3 h-3" /> Add {category.type}
-                    </button>
-                  </div>
-                  <div className="p-4 bg-secondary/50 rounded-xl border border-border">
-                    <pre className="whitespace-pre-wrap text-sm font-sans text-muted-foreground">{category.suggestions}</pre>
-                  </div>
+          {suggestionPhase === 'form' && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">Help us find the best vendors for your wedding. Fill in as much as you can.</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Wedding Theme</Label>
+                  <Input
+                    placeholder="e.g. Royal Rajasthani, Modern Minimalist, South Indian Traditional"
+                    value={suggestionTheme}
+                    onChange={(e) => setSuggestionTheme(e.target.value)}
+                    className="input-botanical text-sm"
+                  />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Building className="w-10 h-10 mx-auto mb-4 text-muted-foreground/50" />
-              <p>No vendor suggestions available.</p>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Budget Range</Label>
+                  <Select value={suggestionBudget} onValueChange={setSuggestionBudget}>
+                    <SelectTrigger className="input-botanical text-sm">
+                      <SelectValue placeholder="Select budget" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="under-5L">Under ₹5 Lakh</SelectItem>
+                      <SelectItem value="5-15L">₹5 - 15 Lakh</SelectItem>
+                      <SelectItem value="15-30L">₹15 - 30 Lakh</SelectItem>
+                      <SelectItem value="30-50L">₹30 - 50 Lakh</SelectItem>
+                      <SelectItem value="50L-1Cr">₹50 Lakh - 1 Crore</SelectItem>
+                      <SelectItem value="above-1Cr">Above ₹1 Crore</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Estimated Guest Count</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 200"
+                  value={suggestionGuests}
+                  onChange={(e) => setSuggestionGuests(e.target.value)}
+                  className="input-botanical text-sm w-40"
+                />
+              </div>
+              <DialogFooter className="pt-2">
+                <button onClick={() => setShowSuggestionsModal(false)} className="btn-botanical-outline">Cancel</button>
+                <button onClick={handleSubmitSuggestionForm} className="btn-botanical">
+                  <Lightbulb className="w-4 h-4" /> Find Vendors
+                </button>
+              </DialogFooter>
             </div>
           )}
 
-          <DialogFooter>
-            <button onClick={() => setShowSuggestionsModal(false)} className="btn-botanical-outline">Close</button>
-          </DialogFooter>
+          {suggestionPhase === 'loading' && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-muted-foreground">Searching for the best vendors near {suggestionLocation}...</p>
+              <p className="text-xs text-muted-foreground">This may take a moment as we check all categories.</p>
+            </div>
+          )}
+
+          {suggestionPhase === 'results' && (
+            <>
+              {suggestionError ? (
+                <div className="text-center py-8">
+                  <AlertCircle className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">{suggestionError}</p>
+                </div>
+              ) : suggestedVendors.length > 0 ? (
+                <div className="space-y-6">
+                  {suggestedVendors.map((category, idx) => (
+                    <div key={idx} className="space-y-3">
+                      <h4 className="font-serif font-medium text-lg border-b border-border pb-1">{category.label}</h4>
+                      <div className="grid gap-3">
+                        {category.vendors.map((vendor, vIdx) => (
+                          <div key={vIdx} className="p-4 bg-secondary/50 rounded-xl border border-border flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium text-sm">{vendor.name}</p>
+                                {vendor.review_rating && (
+                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">⭐ {vendor.review_rating}</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-1.5">{vendor.short_description}</p>
+                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                <span>📞 {vendor.phone}</span>
+                                <span>✉️ {vendor.email}</span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => addSuggestedVendor(category.category, vendor)}
+                              className="btn-botanical-outline text-xs py-1.5 px-3 shrink-0"
+                            >
+                              <Plus className="w-3 h-3" /> Add
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Building className="w-10 h-10 mx-auto mb-4 text-muted-foreground/50" />
+                  <p>No vendor suggestions available.</p>
+                </div>
+              )}
+              <DialogFooter className="pt-4">
+                <button onClick={() => setSuggestionPhase('form')} className="btn-botanical-outline">
+                  <ArrowRight className="w-4 h-4 rotate-180" /> Back
+                </button>
+                <button onClick={() => setShowSuggestionsModal(false)} className="btn-botanical">Done</button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 

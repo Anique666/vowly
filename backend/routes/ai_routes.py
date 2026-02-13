@@ -130,6 +130,30 @@ class PlannerSetDetailsRequest(BaseModel):
 class PlannerSearchRequest(BaseModel):
     vendor_type: str
 
+class VendorSuggestAllRequest(BaseModel):
+    location: str
+    theme: str = ""
+    budget: str = ""
+    estimatedGuests: str = ""
+
+class VendorSuggestion(BaseModel):
+    name: str
+    phone: str = "Not available"
+    email: str = "Not available"
+    review_rating: Optional[str] = None
+    short_description: str = ""
+
+class CategorySuggestions(BaseModel):
+    category: str
+    label: str
+    vendors: List[VendorSuggestion]
+
+class VendorSuggestAllResponse(BaseModel):
+    location: str
+    categories: List[CategorySuggestions]
+    model: str = GROQ_MODEL
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
 class VendorComplaintRequest(BaseModel):
     weddingId: str
     vendorId: str
@@ -399,3 +423,103 @@ async def planner_search_vendor(req: PlannerSearchRequest):
     user = f"Suggest top 3 {req.vendor_type} options in {wedding_state['location']} with brief summaries."
     result = _call_groq(system, user)
     return AIResponse(result=result)
+
+
+# -------------------------------------------------------------------
+# 🔟 Suggest All Vendors (structured, per-category)
+# -------------------------------------------------------------------
+
+VENDOR_CATEGORIES = [
+    ("catering", "Catering"),
+    ("photography", "Photography"),
+    ("decoration", "Decoration"),
+    ("music", "Music/DJ"),
+    ("makeup", "Makeup & Hair"),
+    ("venue", "Venue"),
+    ("transport", "Transport"),
+    ("mehendi", "Mehendi Artist"),
+    ("pandit", "Pandit/Priest"),
+]
+
+
+@ai_router.post("/planner/suggest-vendors", response_model=VendorSuggestAllResponse)
+async def suggest_all_vendors(req: VendorSuggestAllRequest):
+    """
+    For each vendor subcategory, ask the LLM to return top 3 vendors
+    near the given location, considering theme, budget, and guest count.
+    Returns structured JSON per category.
+    """
+    context_parts = [f"Location: {req.location}"]
+    if req.theme:
+        context_parts.append(f"Wedding Theme: {req.theme}")
+    if req.budget:
+        context_parts.append(f"Budget Range: {req.budget}")
+    if req.estimatedGuests:
+        context_parts.append(f"Estimated Guests: {req.estimatedGuests}")
+    context_str = "\n".join(context_parts)
+
+    system_prompt = """You are an expert Indian wedding planner assistant with deep knowledge of local vendors.
+Your job is to suggest the top 3 real, well-known vendors for a given category in the specified city/location.
+Return ONLY valid JSON (no markdown, no extra text) in this exact format:
+[
+  {
+    "name": "Vendor Name",
+    "phone": "phone number or Not available",
+    "email": "email or Not available",
+    "review_rating": "4.5/5" or null,
+    "short_description": "One line about why they are good for this wedding"
+  }
+]
+Rules:
+- Suggest vendors that actually exist and are well-known in the area if possible.
+- If you are not sure about phone/email, put "Not available".
+- If you don't know the review rating, set it to null (do NOT make up ratings).
+- Tailor suggestions to the wedding theme, budget, and size when provided.
+- Return exactly 3 vendors. No extra text, just the JSON array."""
+
+    all_categories: List[CategorySuggestions] = []
+
+    for cat_value, cat_label in VENDOR_CATEGORIES:
+        user_prompt = f"""{context_str}
+Vendor Category: {cat_label}
+Return top 3 {cat_label} vendors for a wedding in {req.location}."""
+
+        try:
+            raw = _call_groq(system_prompt, user_prompt, max_tokens=600)
+            # Parse JSON from response
+            # Try to extract JSON array from the response
+            start = raw.find("[")
+            end = raw.rfind("]")
+            if start != -1 and end != -1:
+                json_str = raw[start:end + 1]
+                vendor_list = json.loads(json_str)
+            else:
+                vendor_list = json.loads(raw)
+
+            vendors_parsed = []
+            for v in vendor_list[:3]:
+                vendors_parsed.append(VendorSuggestion(
+                    name=v.get("name", "Unknown"),
+                    phone=v.get("phone", "Not available"),
+                    email=v.get("email", "Not available"),
+                    review_rating=v.get("review_rating"),
+                    short_description=v.get("short_description", ""),
+                ))
+
+            all_categories.append(CategorySuggestions(
+                category=cat_value,
+                label=cat_label,
+                vendors=vendors_parsed,
+            ))
+        except Exception as e:
+            logger.warning(f"Failed to get suggestions for {cat_label}: {e}")
+            all_categories.append(CategorySuggestions(
+                category=cat_value,
+                label=cat_label,
+                vendors=[],
+            ))
+
+    return VendorSuggestAllResponse(
+        location=req.location,
+        categories=all_categories,
+    )

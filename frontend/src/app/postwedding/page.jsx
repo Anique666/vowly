@@ -74,7 +74,10 @@ export default function PostWeddingPage() {
   const fetchWeddings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/api/weddings`);
+      const storedAuth = localStorage.getItem('vowly_auth');
+      const authToken = storedAuth ? JSON.parse(storedAuth).token : null;
+      const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+      const response = await fetch(`${backendUrl}/api/weddings`, { headers });
       if (!response.ok) throw new Error('Failed');
       const data = await response.json();
       setWeddings(data);
