@@ -250,7 +250,7 @@ export default function DashboardPage() {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-screen bg-white">
         <BotanicalHeader />
