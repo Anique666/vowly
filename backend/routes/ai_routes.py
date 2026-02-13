@@ -252,6 +252,144 @@ async def planner_set_details(req: PlannerSetDetailsRequest):
     return {"status": "updated", "state": wedding_state}
 
 # -------------------------------------------------------------------
+# 9️⃣ Vendor Complaint - AI Summarization + Email
+# -------------------------------------------------------------------
+
+@ai_router.post("/vendor/complaint", response_model=VendorComplaintResponse)
+async def handle_vendor_complaint(req: VendorComplaintRequest):
+    """
+    Process vendor complaint with AI summarization and automated email sending.
+    
+    Flow:
+    1. Receive raw complaint text from organizer
+    2. Use AI to generate professional summary
+    3. Send AI summary to vendor via Maileroo
+    4. Return AI summary to frontend for preview
+    5. Log both raw and AI-generated text for debugging
+    """
+    try:
+        # Load wedding data for context
+        wedding, _, _ = _load_wedding_data(req.weddingId)
+        
+        # Log raw complaint
+        logger.info(f"[VENDOR COMPLAINT] Wedding: {wedding.name}, Vendor: {req.vendorName} ({req.vendorRole})")
+        logger.info(f"[RAW COMPLAINT] {req.complaintText}")
+        
+        # Step 1: Generate AI summary
+        system_prompt = """You are a professional wedding coordinator. Your task is to rewrite vendor complaints into professional, clear, and constructive messages suitable for sending to vendors.
+
+Guidelines:
+- Be polite and professional
+- State the issue clearly and concisely
+- Maintain a solution-oriented tone
+- Remove any emotional language
+- Keep it brief (2-3 paragraphs max)
+- Start with a greeting and end with a professional closing"""
+
+        user_prompt = f"""Wedding Context:
+- Wedding Name: {wedding.name}
+- Location: {wedding.location}
+- Dates: {wedding.startDate} to {wedding.endDate}
+
+Vendor:
+- Name: {req.vendorName}
+- Service: {req.vendorRole}
+
+Raw Complaint from Organizer:
+"{req.complaintText}"
+
+Please rewrite this complaint as a professional email message to send to the vendor."""
+
+        try:
+            ai_summary = _call_groq(system_prompt, user_prompt, max_tokens=500)
+            logger.info(f"[AI SUMMARY] {ai_summary}")
+        except Exception as ai_error:
+            logger.error(f"AI summarization failed: {ai_error}")
+            # Fallback: use raw complaint if AI fails
+            ai_summary = f"""Dear {req.vendorName},
+
+We would like to bring the following matter to your attention regarding our wedding:
+
+{req.complaintText}
+
+We appreciate your prompt attention to this matter.
+
+Best regards,
+{wedding.name} Wedding Organizers"""
+            logger.warning("[FALLBACK] Using raw complaint text due to AI failure")
+        
+        # Step 2: Send email to vendor
+        email_sent = False
+        email_error = None
+        
+        if req.vendorEmail and req.vendorEmail.strip():
+            try:
+                email_subject = f"Update Required - {wedding.name} Wedding"
+                email_html = f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #1B4332;">Message from Wedding Organizers</h2>
+                    <p style="color: #333; line-height: 1.6;">{ai_summary.replace(chr(10), '<br>')}</p>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <p style="color: #666; font-size: 12px;">
+                        Wedding: {wedding.name}<br>
+                        Location: {wedding.location}<br>
+                        Dates: {wedding.startDate} to {wedding.endDate}
+                    </p>
+                </div>
+                """
+                
+                email_result = await send_email(
+                    to=req.vendorEmail,
+                    subject=email_subject,
+                    html=email_html,
+                    text=ai_summary,
+                    from_name=f"{wedding.name} Wedding"
+                )
+                
+                if email_result.success:
+                    email_sent = True
+                    logger.info(f"[EMAIL SUCCESS] Complaint sent to {req.vendorEmail}")
+                else:
+                    email_error = email_result.error
+                    logger.error(f"[EMAIL FAILED] {email_error}")
+                    
+            except Exception as email_exception:
+                email_error = str(email_exception)
+                logger.error(f"[EMAIL EXCEPTION] {email_error}")
+        else:
+            email_error = "Vendor email not provided"
+            logger.warning("[EMAIL SKIPPED] No vendor email available")
+        
+        # Step 3: Return response
+        if email_sent:
+            return VendorComplaintResponse(
+                success=True,
+                aiSummary=ai_summary,
+                rawComplaint=req.complaintText,
+                emailSent=True,
+                message=f"Complaint successfully sent to {req.vendorName}"
+            )
+        else:
+            return VendorComplaintResponse(
+                success=False,
+                aiSummary=ai_summary,
+                rawComplaint=req.complaintText,
+                emailSent=False,
+                message="Failed to send email to vendor",
+                error=email_error
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[COMPLAINT HANDLER ERROR] {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process vendor complaint: {str(e)}"
+        )
+
+
+# -------------------------------------------------------------------
 # 8️⃣ Planner - Search Vendor (AI summary)
 # -------------------------------------------------------------------
 
