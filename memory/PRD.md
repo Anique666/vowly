@@ -88,6 +88,9 @@ Vowly (formerly "AI Wedding Ops") is a full-stack wedding planning application w
 ### Email
 - `POST /api/email/send-invites` - Send guest invitations
 
+### Vendor Complaints
+- `POST /api/ai/vendor/complaint` - AI-powered complaint summarization and email sending
+
 ## Completed Work
 
 ### February 12, 2026
