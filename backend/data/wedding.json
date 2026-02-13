@@ -913,6 +913,29 @@
       ],
       "vendors": [],
       "creatorId": "27d1e48d-1934-4848-9d90-93ce93e51694"
+    },
+    {
+      "id": "dc37796e-4f9b-4987-9f3c-ca3daf890f02",
+      "name": "Anish weds Anish",
+      "location": "Bengaluru Palace, Bengaluru",
+      "startDate": "2026-11-16",
+      "endDate": "2026-11-18",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-11-16",
+          "events": [
+            {
+              "id": "7724d7bd-50c4-4dd7-8961-5a30c1d33220",
+              "name": "a",
+              "time": "12:34",
+              "venue": "b"
+            }
+          ]
+        }
+      ],
+      "vendors": [],
+      "creatorId": "27d1e48d-1934-4848-9d90-93ce93e51694"
     }
   ]
 }

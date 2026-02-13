@@ -626,14 +626,61 @@ def create_invite_email_html(wedding: Wedding, guest_email: str) -> str:
                                     </tr>
                                 </table>
                                 
+                                <!-- Wedding ID -->
+                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                                    <tr>
+                                        <td style="padding: 15px; background-color: #fff9e6; border-left: 4px solid #f5c842; border-radius: 4px;">
+                                            <p style="margin: 0 0 5px 0; color: #333333; font-size: 14px; font-weight: bold;">
+                                                🎊 Your Wedding ID
+                                            </p>
+                                            <p style="margin: 0; color: #666666; font-size: 16px; font-family: monospace; letter-spacing: 0.5px;">
+                                                {wedding.id}
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
                                 <!-- RSVP Button -->
-                                <table role="presentation" style="margin: 30px 0;">
+                                <table role="presentation" style="margin: 30px 0; width: 100%;">
                                     <tr>
                                         <td align="center">
-                                            <a href="https://your-app-url.com/rsvp?weddingId={wedding.id}&email={guest_email}" 
+                                            <a href="http://localhost:3000/auth/guest" 
                                                style="display: inline-block; padding: 15px 40px; background-color: #f5c842; color: #000000; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
                                                 RSVP Now
                                             </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- RSVP Instructions -->
+                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                                    <tr>
+                                        <td style="padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+                                            <p style="margin: 0 0 12px 0; color: #333333; font-size: 16px; font-weight: bold;">
+                                                📋 How to RSVP
+                                            </p>
+                                            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                                <tr>
+                                                    <td style="padding: 6px 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                                        <strong>Step 1:</strong> Click the "RSVP Now" button above to open the guest portal.
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 6px 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                                        <strong>Step 2:</strong> Sign up with your name, email, and a password.
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 6px 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                                        <strong>Step 3:</strong> Once logged in, use the Wedding ID shown above to find and RSVP to the wedding.
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 6px 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                                        <strong>Step 4:</strong> Select which days you'll be attending and submit your RSVP!
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                     </tr>
                                 </table>
@@ -951,7 +998,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
+# Configure logging 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
