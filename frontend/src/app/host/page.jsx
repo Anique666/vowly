@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useRequireAuth, useAuth } from '@/context/AuthContext';
 import { 
   Plus, Trash2, Send, Save, Calendar, MapPin, 
   Loader2, UserPlus, Mail, Building, Lightbulb, CheckCircle,
