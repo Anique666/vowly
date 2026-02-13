@@ -192,5 +192,27 @@ Vowly (formerly "AI Wedding Ops") is a full-stack wedding planning application w
 ## Future/Backlog
 - SMS notifications for vendors (requires Twilio keys)
 - Face recognition for auto-tagging (requires ML model integration)
+
+
+### February 13, 2026 (Afternoon)
+- ✅ **AI-Powered Vendor Complaint Flow**
+  - Created `/api/ai/vendor/complaint` endpoint for intelligent complaint handling
+  - AI summarizes raw complaints into professional messages using LLaMA (Groq)
+  - Automatic email delivery to vendors via Maileroo
+  - Frontend modal shows AI-generated summary to organizers
+  - Graceful fallback if AI service fails (sends raw complaint with professional template)
+  - Comprehensive logging (raw + AI summary) for debugging
+  - Backend logs include: wedding context, vendor details, raw complaint, AI summary, and email status
+  
+- ✅ **Enhanced Dashboard UX**
+  - Updated "Report Issue" modal with improved two-step workflow
+  - Step 1: Organizer enters complaint → AI processes → Email sent
+  - Step 2: Show AI-generated professional message preview
+  - Loading state during AI processing ("Processing...")
+  - Collapsible view of original complaint text (details element)
+  - Clear success/failure feedback messages via toast notifications
+  - Consistent Botanical theme styling with shadcn/ui components
+  - Modal remains open after sending to show AI summary (organizer must close manually)
+
 - Guest accommodation management
 - Vendor payment tracking
