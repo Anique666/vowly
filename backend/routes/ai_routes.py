@@ -26,6 +26,7 @@ from groq import Groq
 
 from models.wedding_models import Wedding, Guest, Vendor
 from utils.file_utils import get_from_collection, list_collection
+from utils.maileroo import send_email
 
 logger = logging.getLogger(__name__)
 ai_router = APIRouter(prefix="/api/ai", tags=["AI"])
