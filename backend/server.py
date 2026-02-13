@@ -715,7 +715,7 @@ def create_thankyou_email_html(wedding: Wedding, guest_name: str) -> str:
 @api_router.post("/email/send-invites", response_model=EmailResponse)
 async def send_wedding_invites(request: SendInvitesRequest):
     """
-    Send wedding invitation emails to specified guests
+    Send wedding invitation emails to specified guests using Maileroo.
     - Fetches wedding information
     - Sends personalized invites with RSVP link
     """
@@ -730,40 +730,34 @@ async def send_wedding_invites(request: SendInvitesRequest):
                 detail=f"Wedding with id '{request.weddingId}' not found"
             )
         
-        # Send emails to each guest
+        # Send emails to each guest using Maileroo
         failed_emails = []
         successful_count = 0
+        last_error = ""
         
         for guest_email in request.guestEmails:
-            try:
-                html_content = create_invite_email_html(wedding, guest_email)
-                
-                params = {
-                    "from": SENDER_EMAIL,
-                    "to": [guest_email],
-                    "subject": f"You're Invited: {wedding.name}",
-                    "html": html_content
-                }
-                
-                # Send email using asyncio.to_thread for non-blocking operation
-                email_response = await asyncio.to_thread(resend.Emails.send, params)
+            html_content = create_invite_email_html(wedding, guest_email)
+            
+            # Send email using Maileroo
+            result = await send_email(
+                to=guest_email,
+                subject=f"You're Invited: {wedding.name}",
+                html=html_content,
+                from_name="Wedding Ops"
+            )
+            
+            if result.success:
                 successful_count += 1
-                logger.info(f"Sent invitation to {guest_email} - Email ID: {email_response.get('id')}")
-                
-            except Exception as e:
-                error_str = str(e)
-                logger.error(f"Failed to send invitation to {guest_email}: {error_str}")
+                logger.info(f"Sent invitation to {guest_email} - Email ID: {result.email_id}")
+            else:
                 failed_emails.append(guest_email)
-                # Store the last error for user feedback
-                if "verify a domain" in error_str.lower():
-                    last_error = "Resend sandbox mode: Can only send to verified account email. Verify a domain at resend.com/domains for full access."
-                else:
-                    last_error = error_str[:200]
+                last_error = result.error or "Unknown error"
+                logger.error(f"Failed to send invitation to {guest_email}: {result.error}")
         
         # Build response with helpful error details
         error_detail = ""
         if failed_emails and successful_count == 0:
-            error_detail = last_error if 'last_error' in dir() else "Email delivery failed. Check Resend configuration."
+            error_detail = last_error or "Email delivery failed. Check Maileroo configuration."
         
         return EmailResponse(
             status="success" if successful_count > 0 else "failed",
