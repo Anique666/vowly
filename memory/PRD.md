@@ -89,15 +89,32 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
   - Dashboard with countdown, stats cards, events
   - RSVP page with guest form
   - Guest dashboard with AI tips
-  - Post-wedding photo gallery
   - Shared header and footer components
+- ✅ **Photo Gallery Feature** with manual tagging + AI-assisted search
+  - Photo upload to `/api/photos/upload` (multipart)
+  - Photo tagging with `/api/photos/tag`
+  - Gallery display with `/api/wedding/{id}/photos`
+  - AI-powered search with `/api/ai/photo-search` (LLM extracts tags from natural language)
+  - Tag editor modal in frontend
+  - Lightbox for full-size viewing
+  - Photo deletion
+
+### Photo Gallery API Endpoints
+- `POST /api/photos/upload` - Upload photos (multipart form-data)
+- `POST /api/photos/tag` - Add/update photo tags
+- `GET /api/wedding/{id}/photos` - Get photos for wedding
+- `POST /api/ai/photo-search` - AI search intent extraction
+- `GET /api/photo-tags` - Get available tags
+- `DELETE /api/photos/{id}` - Delete a photo
+- `GET /api/photos/file/{wedding_id}/{filename}` - Serve photo files
 
 ## Known Limitations
 - Resend email requires domain verification for non-sandbox sending
 - Twilio SMS integration not configured (missing API keys)
+- Photo gallery uses manual tagging (no face recognition ML models)
 
 ## Future/Backlog
 - SMS notifications for vendors (requires Twilio keys)
-- Photo upload functionality for post-wedding gallery
+- Face recognition for auto-tagging (requires ML model integration)
 - Guest accommodation management
 - Vendor payment tracking
