@@ -776,7 +776,7 @@ async def send_wedding_invites(request: SendInvitesRequest):
 @api_router.post("/email/send-thankyou", response_model=EmailResponse)
 async def send_thankyou_emails(request: SendThankYouRequest):
     """
-    Send thank you emails to all guests of a wedding
+    Send thank you emails to all guests of a wedding using Maileroo.
     - Fetches wedding and guest information
     - Sends personalized thank you emails
     """
@@ -800,7 +800,7 @@ async def send_thankyou_emails(request: SendThankYouRequest):
                 detail=f"No guests found for wedding '{request.weddingId}'"
             )
         
-        # Send thank you emails
+        # Send thank you emails using Maileroo
         failed_emails = []
         successful_count = 0
         
@@ -812,24 +812,22 @@ async def send_thankyou_emails(request: SendThankYouRequest):
                 logger.info(f"Skipping guest {guest.name} - no email address")
                 continue
             
-            try:
-                html_content = create_thankyou_email_html(wedding, guest.name)
-                
-                params = {
-                    "from": SENDER_EMAIL,
-                    "to": [guest.email],
-                    "subject": f"Thank You from {wedding.name}",
-                    "html": html_content
-                }
-                
-                # Send email using asyncio.to_thread for non-blocking operation
-                email_response = await asyncio.to_thread(resend.Emails.send, params)
+            html_content = create_thankyou_email_html(wedding, guest.name)
+            
+            # Send email using Maileroo
+            result = await send_email(
+                to=guest.email,
+                subject=f"Thank You from {wedding.name}",
+                html=html_content,
+                from_name="Wedding Ops"
+            )
+            
+            if result.success:
                 successful_count += 1
-                logger.info(f"Sent thank you to {guest.email} - Email ID: {email_response.get('id')}")
-                
-            except Exception as e:
-                logger.error(f"Failed to send thank you to {guest.email}: {str(e)}")
+                logger.info(f"Sent thank you to {guest.email} - Email ID: {result.email_id}")
+            else:
                 failed_emails.append(guest.email)
+                logger.error(f"Failed to send thank you to {guest.email}: {result.error}")
         
         return EmailResponse(
             status="success" if successful_count > 0 else "failed",
