@@ -17,6 +17,15 @@
       "role": "organizer",
       "weddingId": "6c28451a-fcc6-4fe4-ac6a-6f74cae66329",
       "createdAt": "2026-02-13T01:11:30.327367+00:00"
+    },
+    {
+      "id": "b1490cd1-a257-4c39-81fc-782a36eee76d",
+      "email": "alice@test.com",
+      "name": "Alice Smith",
+      "password": "839cf2c68d98867e223767d8ef6e6909d24b4a53f89b02e8e63d28952245ee79",
+      "role": "organizer",
+      "weddingId": null,
+      "createdAt": "2026-02-13T01:12:02.807490+00:00"
     }
   ],
   "guests": [
