@@ -19,5 +19,15 @@
       "createdAt": "2026-02-13T01:11:30.327367+00:00"
     }
   ],
-  "guests": []
+  "guests": [
+    {
+      "id": "0e451ddb-00c9-4746-be2e-0b218e16137e",
+      "email": "guest@test.com",
+      "name": "Guest User",
+      "password": "7cb750b8f3662e48cdc54795fd4a2e04850abc04b2850be3ed314078b74a46ca",
+      "role": "guest",
+      "weddingId": null,
+      "createdAt": "2026-02-13T01:11:51.126193+00:00"
+    }
+  ]
 }
