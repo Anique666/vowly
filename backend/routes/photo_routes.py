@@ -389,7 +389,7 @@ async def ai_photo_search(request: PhotoSearchRequest):
     )
 
 
-@photo_router.get("/photos/tags")
+@photo_router.get("/photo-tags")
 async def get_available_tags():
     """
     Get list of common/suggested tags for tagging UI.
