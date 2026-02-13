@@ -60,10 +60,14 @@ function OrganizerAuthContent() {
         toast({ title: 'Welcome to Vowly!', description: 'Your organizer account has been created.' });
         router.push('/host');
       } else {
-        await login(formData.email, formData.password, 'organizer');
+        const result = await login(formData.email, formData.password, 'organizer');
         toast({ title: 'Welcome back!', description: 'You have been logged in successfully.' });
-        // Check if user has a wedding
-        router.push('/dashboard');
+        // Redirect based on whether user has a wedding
+        if (result.user.weddingId) {
+          router.push('/dashboard');
+        } else {
+          router.push('/host');
+        }
       }
     } catch (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
