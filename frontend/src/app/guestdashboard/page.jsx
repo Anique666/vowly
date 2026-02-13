@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useRequireAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { Calendar, Clock, MapPin, Send, Loader2, User, X, MessageCircle, Lightbulb, PartyPopper, Bot } from 'lucide-react';
+import { Calendar, Clock, MapPin, Send, Loader2, User, X, MessageCircle, Lightbulb, PartyPopper, Bot, Camera } from 'lucide-react';
 import { BotanicalHeader, BotanicalFooter } from '@/components/botanical/Layout';
 
 function FormattedAIResponse({ text }) {
@@ -28,6 +30,9 @@ function FormattedAIResponse({ text }) {
 }
 
 export default function GuestDashboardPage() {
+  // Route protection - require guest auth
+  const { loading: authLoading } = useRequireAuth('guest');
+  
   const { toast } = useToast();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
   const chatEndRef = useRef(null);
