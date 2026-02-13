@@ -296,6 +296,32 @@
       ],
       "dietary": "non-veg",
       "accommodation": true
+    },
+    {
+      "id": "cdd82938-b964-41da-9094-4433f509d271",
+      "weddingId": "0b936780-7926-4e99-ac13-17e269130cd6",
+      "name": "Anish Kasetty",
+      "email": "anishkas@gmail.com",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "dietary": "veg",
+      "accommodation": true
+    },
+    {
+      "id": "658b8093-cd5f-4490-a539-c9f2d24c8e18",
+      "weddingId": "0b936780-7926-4e99-ac13-17e269130cd6",
+      "name": "guest",
+      "email": "guest@mail.com",
+      "attendingDays": [
+        true,
+        true,
+        false
+      ],
+      "dietary": "veg",
+      "accommodation": true
     }
   ]
 }

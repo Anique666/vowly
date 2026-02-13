@@ -244,6 +244,40 @@ async def delete_wedding(wedding_id: str):
 
 
 # Guest Endpoints with Validation
+@api_router.get("/guest/weddings", response_model=List[Wedding])
+async def get_guest_weddings(email: str):
+    """
+    Get all weddings that a guest has RSVPed for.
+    Query parameter: email (required) - the guest's email address
+    Returns only weddings where the guest has an RSVP entry.
+    """
+    try:
+        if not email or not email.strip():
+            raise HTTPException(status_code=400, detail="Email parameter is required")
+        
+        # Find all guest RSVPs for this email
+        all_guests = list_collection('guests.json', 'guests')
+        guest_wedding_ids = list(set(
+            g['weddingId'] for g in all_guests
+            if (g.get('email') or '').lower() == email.lower()
+        ))
+        
+        if not guest_wedding_ids:
+            return []
+        
+        # Fetch the wedding objects for those IDs
+        all_weddings = list_collection('wedding.json', 'weddings')
+        matched_weddings = [w for w in all_weddings if w['id'] in guest_wedding_ids]
+        
+        logger.info(f"Found {len(matched_weddings)} weddings for guest {email}")
+        return [Wedding(**w) for w in matched_weddings]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting guest weddings: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 @api_router.post("/guest/rsvp", response_model=Guest, status_code=201)
 async def guest_rsvp(guest_data: GuestCreate):
     """

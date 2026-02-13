@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useRequireAuth } from '@/context/AuthContext';
+import { useRequireAuth, useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { Calendar, Clock, MapPin, Send, Loader2, User, X, MessageCircle, Lightbulb, PartyPopper, Bot, Camera } from 'lucide-react';
@@ -32,6 +32,7 @@ function FormattedAIResponse({ text }) {
 export default function GuestDashboardPage() {
   // Route protection - require guest auth
   const { loading: authLoading } = useRequireAuth('guest');
+  const { user } = useAuth();
   
   const { toast } = useToast();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
@@ -50,14 +51,14 @@ export default function GuestDashboardPage() {
   const [isSendingChat, setIsSendingChat] = useState(false);
 
   useEffect(() => { const timer = setInterval(() => setCurrentTime(new Date()), 60000); return () => clearInterval(timer); }, []);
-  useEffect(() => { fetchWeddings(); }, []);
+  useEffect(() => { if (user?.email) fetchWeddings(); }, [user?.email]);
   useEffect(() => { if (selectedWeddingId) fetchWeddingData(selectedWeddingId); }, [selectedWeddingId]);
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatMessages]);
 
   const fetchWeddings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/api/weddings`);
+      const response = await fetch(`${backendUrl}/api/guest/weddings?email=${encodeURIComponent(user.email)}`);
       if (!response.ok) throw new Error('Failed');
       const data = await response.json();
       setWeddings(data);
@@ -134,7 +135,12 @@ export default function GuestDashboardPage() {
         <main className="pt-24 pb-20 text-center max-w-xl mx-auto px-6">
           <PartyPopper className="w-16 h-16 mx-auto text-muted-foreground/30 mb-6" />
           <h1 className="text-3xl font-serif mb-4">No Weddings Found</h1>
-          <p className="text-muted-foreground">Ask the host to share a wedding invite with you.</p>
+          <p className="text-muted-foreground mb-6">You haven&apos;t RSVPed for any weddings yet.</p>
+          <Link href="/rsvp">
+            <motion.button className="btn-botanical" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              RSVP for a Wedding
+            </motion.button>
+          </Link>
         </main>
         <BotanicalFooter />
       </div>

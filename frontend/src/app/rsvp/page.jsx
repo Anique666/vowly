@@ -11,26 +11,32 @@ import { useToast } from '@/hooks/use-toast';
 import { MapPin, Calendar, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { BotanicalHeader, BotanicalFooter } from '@/components/botanical/Layout';
+import { useAuth } from '@/context/AuthContext';
 
 function RSVPContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuth();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
 
   const weddingIdParam = searchParams.get('weddingId');
-  const emailParam = searchParams.get('email');
 
   const [wedding, setWedding] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [weddingId, setWeddingId] = useState(weddingIdParam || '');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState(emailParam || '');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [attendingDays, setAttendingDays] = useState([]);
   const [dietary, setDietary] = useState('veg');
   const [accommodation, setAccommodation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) setEmail(user.email);
+    if (user?.name) setName(user.name);
+  }, [user]);
 
   useEffect(() => {
     if (weddingIdParam) fetchWedding(weddingIdParam);
@@ -96,7 +102,10 @@ function RSVPContent() {
             <h2 className="text-3xl font-serif mb-4">Thank You!</h2>
             <p className="text-muted-foreground mb-2">Your RSVP for <strong className="text-foreground">{wedding?.name}</strong> has been submitted.</p>
             <p className="text-sm text-muted-foreground mb-6">We&apos;re excited to celebrate with you!</p>
-            <Link href="/" className="btn-botanical inline-flex">Back to Home</Link>
+            <div className="flex flex-col gap-3">
+              <Link href="/guestdashboard" className="btn-botanical inline-flex justify-center">Go to Guest Dashboard</Link>
+              <Link href="/" className="btn-botanical-outline inline-flex justify-center">Back to Home</Link>
+            </div>
           </motion.div>
         </main>
         <BotanicalFooter />
@@ -165,7 +174,8 @@ function RSVPContent() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input-botanical" />
+                    <Input id="email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input-botanical" readOnly={!!user?.email} style={user?.email ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}} />
+                    {user?.email && <p className="text-xs text-muted-foreground">Using your logged-in email</p>}
                   </div>
                 </div>
 

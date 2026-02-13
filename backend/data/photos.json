@@ -21,6 +21,29 @@
       ],
       "caption": null,
       "uploadedAt": "2026-02-12T23:57:31.306808+00:00"
+    },
+    {
+      "id": "6706aea7-206e-46b6-b387-4aecba5e8357",
+      "weddingId": "d4683dd6-a933-445b-a1cd-3a107b8511ed",
+      "filename": "4d9fb4d3-8488-437f-85a4-36a6487d49d4.jfif",
+      "tags": [
+        "groom",
+        "bride"
+      ],
+      "caption": null,
+      "uploadedAt": "2026-02-13T09:25:46.879615+00:00"
+    },
+    {
+      "id": "e0bfaf08-717b-41cd-b432-99b1a7406993",
+      "weddingId": "d4683dd6-a933-445b-a1cd-3a107b8511ed",
+      "filename": "05307b05-c57e-4d6d-b06d-41044c6f6ad3.webp",
+      "tags": [
+        "groom",
+        "bride",
+        "mehendi"
+      ],
+      "caption": null,
+      "uploadedAt": "2026-02-13T09:27:46.010119+00:00"
     }
   ]
 }
