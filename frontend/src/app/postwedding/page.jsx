@@ -495,25 +495,25 @@ export default function PostWeddingPage() {
                   key={photo.id} 
                   variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }} 
                   className="aspect-square relative group cursor-pointer overflow-hidden rounded-2xl border border-border"
+                  onClick={() => openLightbox(index)}
                 >
                   <img 
                     src={getPhotoUrl(photo)} 
                     alt={photo.caption || `Photo ${index + 1}`} 
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    onClick={() => openLightbox(index)}
                   />
                   
-                  {/* Overlay with actions */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                  {/* Overlay with actions - pointer-events-none by default, enabled on hover */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
                     <button 
                       onClick={(e) => { e.stopPropagation(); openLightbox(index); }}
-                      className="p-2 rounded-full bg-white/90 hover:bg-white text-foreground transition-colors"
+                      className="p-2 rounded-full bg-white/90 hover:bg-white text-foreground transition-colors pointer-events-auto"
                     >
                       <Heart className="w-5 h-5" />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); openTagEditor(photo); }}
-                      className="p-2 rounded-full bg-white/90 hover:bg-white text-foreground transition-colors"
+                      className="p-2 rounded-full bg-white/90 hover:bg-white text-foreground transition-colors pointer-events-auto"
                     >
                       <Tag className="w-5 h-5" />
                     </button>
@@ -521,7 +521,7 @@ export default function PostWeddingPage() {
 
                   {/* Tags indicator */}
                   {photo.tags && photo.tags.length > 0 && (
-                    <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1">
+                    <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1 pointer-events-none">
                       {photo.tags.slice(0, 2).map((tag, i) => (
                         <span key={i} className="text-xs bg-black/60 text-white px-2 py-0.5 rounded-full">
                           {tag}
