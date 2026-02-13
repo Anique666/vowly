@@ -130,10 +130,26 @@ class PlannerSetDetailsRequest(BaseModel):
 class PlannerSearchRequest(BaseModel):
     vendor_type: str
 
+class VendorComplaintRequest(BaseModel):
+    weddingId: str
+    vendorId: str
+    complaintText: str
+    vendorName: str
+    vendorRole: str
+    vendorEmail: str
+
 class AIResponse(BaseModel):
     result: str
     model: str = GROQ_MODEL
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+class VendorComplaintResponse(BaseModel):
+    success: bool
+    aiSummary: str
+    rawComplaint: str
+    emailSent: bool
+    message: str
+    error: Optional[str] = None
 
 # -------------------------------------------------------------------
 # In-memory Planner State
