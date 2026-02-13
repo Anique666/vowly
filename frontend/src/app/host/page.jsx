@@ -35,6 +35,10 @@ const debugLog = (message, data) => {
 };
 
 export default function HostPage() {
+  // Route protection - require organizer auth
+  const { loading: authLoading } = useRequireAuth('organizer');
+  const { updateWeddingId } = useAuth();
+  
   const { toast } = useToast();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001';
 
