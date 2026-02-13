@@ -156,14 +156,25 @@ export default function GuestDashboardPage() {
                 {isWeddingDay ? 'Celebration Day!' : 'Welcome, Guest'}
               </h1>
             </div>
-            <Select value={selectedWeddingId} onValueChange={setSelectedWeddingId}>
-              <SelectTrigger className="input-botanical w-full md:w-64">
-                <SelectValue placeholder="Select Wedding" />
-              </SelectTrigger>
-              <SelectContent>
-                {weddings.map((w) => (<SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-3">
+              <Link href="/postwedding">
+                <motion.button
+                  className="btn-botanical-outline text-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Camera className="w-4 h-4" /> Album
+                </motion.button>
+              </Link>
+              <Select value={selectedWeddingId} onValueChange={setSelectedWeddingId}>
+                <SelectTrigger className="input-botanical w-full md:w-56">
+                  <SelectValue placeholder="Select Wedding" />
+                </SelectTrigger>
+                <SelectContent>
+                  {weddings.map((w) => (<SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
           </motion.div>
 
           {/* Wedding Info */}
