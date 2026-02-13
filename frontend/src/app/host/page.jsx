@@ -250,6 +250,19 @@ export default function HostPage() {
     }
   };
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <BotanicalHeader />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+        <BotanicalFooter />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <BotanicalHeader />
