@@ -116,7 +116,6 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
 - `GET /api/photos/file/{wedding_id}/{filename}` - Serve photo files
 
 ## Known Limitations
-- Resend email requires domain verification for non-sandbox sending
 - Twilio SMS integration not configured (missing API keys)
 - Photo gallery uses manual tagging (no face recognition ML models)
 
