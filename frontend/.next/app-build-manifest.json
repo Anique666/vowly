@@ -66,6 +66,15 @@
       "static/chunks/720-fa6c68969a155a91.js",
       "static/chunks/app/guestdashboard/page-4fa67b3a97749cd4.js"
     ],
+    "/page": [
+      "static/chunks/webpack-8a58afe8eb7eecdb.js",
+      "static/chunks/fd9d1056-eabcefd8a17f0848.js",
+      "static/chunks/117-474785f760adfd2c.js",
+      "static/chunks/main-app-b5146d1b055dd54e.js",
+      "static/chunks/100-02408dfda72558ee.js",
+      "static/chunks/720-fa6c68969a155a91.js",
+      "static/chunks/app/page-ee82b5ffe6861572.js"
+    ],
     "/host/page": [
       "static/chunks/webpack-8a58afe8eb7eecdb.js",
       "static/chunks/fd9d1056-eabcefd8a17f0848.js",
@@ -79,15 +88,6 @@
       "static/chunks/1-8acdb80bbe2a440e.js",
       "static/chunks/720-fa6c68969a155a91.js",
       "static/chunks/app/host/page-ee70e3e9f6935e29.js"
-    ],
-    "/page": [
-      "static/chunks/webpack-8a58afe8eb7eecdb.js",
-      "static/chunks/fd9d1056-eabcefd8a17f0848.js",
-      "static/chunks/117-474785f760adfd2c.js",
-      "static/chunks/main-app-b5146d1b055dd54e.js",
-      "static/chunks/100-02408dfda72558ee.js",
-      "static/chunks/720-fa6c68969a155a91.js",
-      "static/chunks/app/page-ee82b5ffe6861572.js"
     ],
     "/postwedding/page": [
       "static/chunks/webpack-8a58afe8eb7eecdb.js",

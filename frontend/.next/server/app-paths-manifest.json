@@ -5,8 +5,8 @@
   "/auth/organizer/page": "app/auth/organizer/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/guestdashboard/page": "app/guestdashboard/page.js",
-  "/host/page": "app/host/page.js",
   "/page": "app/page.js",
+  "/host/page": "app/host/page.js",
   "/postwedding/page": "app/postwedding/page.js",
   "/rsvp/page": "app/rsvp/page.js"
 }
