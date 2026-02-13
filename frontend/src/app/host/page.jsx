@@ -223,9 +223,7 @@ export default function HostPage() {
 
       if (failedEmails.length > 0 && sentCount === 0) {
         let errorMessage = 'Failed to send invites.';
-        if (errorDetails.includes('sandbox') || errorDetails.includes('verify a domain')) {
-          errorMessage = 'Email service is in sandbox mode. Verify a domain on Resend for full access.';
-        } else if (errorDetails) {
+        if (errorDetails) {
           errorMessage = errorDetails;
         }
         toast({ title: 'Email Delivery Issue', description: errorMessage, variant: 'destructive' });
