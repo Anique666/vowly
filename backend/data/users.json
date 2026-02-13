@@ -15,7 +15,7 @@
       "name": "John Doe",
       "password": "2b081fb3eb8f06dfa910a3530eadcdd423cded55a785a42e05fb65a40f6042a1",
       "role": "organizer",
-      "weddingId": null,
+      "weddingId": "6c28451a-fcc6-4fe4-ac6a-6f74cae66329",
       "createdAt": "2026-02-13T01:11:30.327367+00:00"
     }
   ],

@@ -824,6 +824,28 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "6c28451a-fcc6-4fe4-ac6a-6f74cae66329",
+      "name": "John & Jane Wedding",
+      "location": "Mumbai, India",
+      "startDate": "2026-06-15",
+      "endDate": "2026-06-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-06-15",
+          "events": [
+            {
+              "id": "9447df08-e30d-4145-9dbd-67f6616f6a00",
+              "name": "Mehendi Ceremony",
+              "time": "16:00",
+              "venue": "Grand Hotel"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
