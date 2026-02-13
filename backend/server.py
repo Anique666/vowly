@@ -12,7 +12,6 @@ from typing import List
 import uuid
 from datetime import datetime, timezone
 import asyncio
-import resend
 
 # Import wedding models and utilities
 from models.wedding_models import (
@@ -29,6 +28,7 @@ from utils.file_utils import (
     get_from_collection,
     list_collection
 )
+from utils.maileroo import send_email, test_maileroo_connection, get_email_config
 from routes.ai_routes import ai_router
 from routes.photo_routes import photo_router
 
