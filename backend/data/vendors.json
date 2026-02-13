@@ -317,6 +317,18 @@
         true
       ],
       "notes": null
+    },
+    {
+      "id": "1856c461-a6fd-41a5-97ee-1ac76386c380",
+      "weddingId": "6c28451a-fcc6-4fe4-ac6a-6f74cae66329",
+      "name": "Test Catering Co",
+      "serviceType": "catering",
+      "email": "vendor@test.com",
+      "phoneNumber": "1234567890",
+      "attendingDays": [
+        true
+      ],
+      "notes": null
     }
   ]
 }
