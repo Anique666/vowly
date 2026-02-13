@@ -843,6 +843,34 @@ async def send_thankyou_emails(request: SendThankYouRequest):
         raise HTTPException(status_code=500, detail=f"Failed to send thank you emails: {str(e)}")
 
 
+@api_router.get("/email/health")
+async def check_email_health():
+    """
+    Check email service (Maileroo) health and configuration.
+    
+    Returns configuration status and connectivity test result.
+    Useful for development and debugging email issues.
+    """
+    # Get config info
+    config = get_email_config()
+    
+    # Test connectivity
+    connection_status = await test_maileroo_connection()
+    
+    return {
+        "service": "Maileroo",
+        "config": {
+            "api_key_set": config["api_key_set"],
+            "from_email": config["from_email"],
+        },
+        "connection": {
+            "connected": connection_status["connected"],
+            "message": connection_status["message"],
+        },
+        "status": "healthy" if connection_status["connected"] else "unhealthy"
+    }
+
+
 # ============================================================================
 # PHOTO FILE SERVING
 # ============================================================================
