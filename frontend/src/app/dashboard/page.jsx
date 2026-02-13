@@ -70,6 +70,8 @@ export default function DashboardPage() {
   const [selectedVendorForComplaint, setSelectedVendorForComplaint] = useState(null);
   const [vendorComplaintText, setVendorComplaintText] = useState('');
   const [isSubmittingVendorComplaint, setIsSubmittingVendorComplaint] = useState(false);
+  const [aiGeneratedSummary, setAiGeneratedSummary] = useState('');
+  const [showAiSummary, setShowAiSummary] = useState(false);
 
   useEffect(() => { fetchWeddings(); }, []);
   useEffect(() => { if (selectedWeddingId) fetchWeddingData(selectedWeddingId); }, [selectedWeddingId]);
@@ -169,20 +171,75 @@ export default function DashboardPage() {
     return { confirmed, total: vendors.length };
   };
 
-  const openVendorComplaint = (vendor) => { setSelectedVendorForComplaint(vendor); setVendorComplaintText(''); setShowVendorComplaintModal(true); };
+  const openVendorComplaint = (vendor) => { 
+    setSelectedVendorForComplaint(vendor); 
+    setVendorComplaintText(''); 
+    setAiGeneratedSummary('');
+    setShowAiSummary(false);
+    setShowVendorComplaintModal(true); 
+  };
 
   const submitVendorComplaint = async () => {
     if (!vendorComplaintText.trim() || !selectedVendorForComplaint) return;
     setIsSubmittingVendorComplaint(true);
+    setShowAiSummary(false);
+    
     try {
-      await fetch(`${backendUrl}/api/ai/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ weddingId: selectedWeddingId, message: `Draft a professional complaint message to a ${selectedVendorForComplaint.serviceType} vendor about: "${vendorComplaintText}"`, role: 'host' }) });
-      if (selectedVendorForComplaint.email) {
-        await fetch(`${backendUrl}/api/email/send-invites`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ weddingId: selectedWeddingId, guestEmails: [selectedVendorForComplaint.email] }) });
+      const response = await fetch(`${backendUrl}/api/ai/vendor/complaint`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ 
+          weddingId: selectedWeddingId, 
+          vendorId: selectedVendorForComplaint.id || '',
+          vendorName: selectedVendorForComplaint.name,
+          vendorRole: selectedVendorForComplaint.serviceType,
+          vendorEmail: selectedVendorForComplaint.email || '',
+          complaintText: vendorComplaintText
+        }) 
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to process complaint');
       }
-      toast({ title: 'Complaint Sent!', description: `Message sent to ${selectedVendorForComplaint.name}` });
-      setShowVendorComplaintModal(false); setVendorComplaintText('');
-    } catch (err) { toast({ title: 'Error', description: 'Failed to send complaint.', variant: 'destructive' }); }
-    finally { setIsSubmittingVendorComplaint(false); }
+
+      const data = await response.json();
+      
+      // Show AI summary to user
+      setAiGeneratedSummary(data.aiSummary);
+      setShowAiSummary(true);
+
+      if (data.emailSent) {
+        toast({ 
+          title: 'Complaint Sent!', 
+          description: `AI-generated professional message sent to ${selectedVendorForComplaint.name}` 
+        });
+      } else {
+        toast({ 
+          title: 'Email Failed', 
+          description: data.error || 'Could not send email to vendor. Summary generated successfully.', 
+          variant: 'destructive' 
+        });
+      }
+      
+      // Keep modal open to show AI summary
+      // User can close it manually
+    } catch (err) { 
+      toast({ 
+        title: 'Error', 
+        description: err.message || 'Failed to send complaint.', 
+        variant: 'destructive' 
+      }); 
+    } finally { 
+      setIsSubmittingVendorComplaint(false); 
+    }
+  };
+
+  const closeComplaintModal = () => {
+    setShowVendorComplaintModal(false);
+    setVendorComplaintText('');
+    setAiGeneratedSummary('');
+    setShowAiSummary(false);
   };
 
   const handleSendChat = async (e) => {
