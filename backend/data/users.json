@@ -1,1 +1,23 @@
-{"organizers": [], "guests": []}
+{
+  "organizers": [
+    {
+      "id": "78d499aa-ac2d-43ee-a27b-84fc0dc377a9",
+      "email": "organizer@test.com",
+      "name": "Test Organizer",
+      "password": "839cf2c68d98867e223767d8ef6e6909d24b4a53f89b02e8e63d28952245ee79",
+      "role": "organizer",
+      "weddingId": null,
+      "createdAt": "2026-02-13T01:11:30.085036+00:00"
+    },
+    {
+      "id": "70027794-c983-40a7-9b3d-5e88e0e7874b",
+      "email": "john@vowly.com",
+      "name": "John Doe",
+      "password": "2b081fb3eb8f06dfa910a3530eadcdd423cded55a785a42e05fb65a40f6042a1",
+      "role": "organizer",
+      "weddingId": null,
+      "createdAt": "2026-02-13T01:11:30.327367+00:00"
+    }
+  ],
+  "guests": []
+}
