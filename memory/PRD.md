@@ -8,7 +8,7 @@ AI Wedding Ops is a full-stack wedding planning application with AI-powered assi
 - **Backend**: FastAPI, Python
 - **Database**: MongoDB
 - **AI/LLM**: Groq API (Mixtral)
-- **Email**: Resend API
+- **Email**: Maileroo API (transactional emails)
 
 ## Core Features
 
