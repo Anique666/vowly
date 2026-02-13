@@ -530,19 +530,90 @@ export default function DashboardPage() {
       </AnimatePresence>
 
       {/* Vendor Complaint Modal */}
-      <Dialog open={showVendorComplaintModal} onOpenChange={setShowVendorComplaintModal}>
-        <DialogContent>
+      <Dialog open={showVendorComplaintModal} onOpenChange={closeComplaintModal}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-serif">Report Issue</DialogTitle>
-            <DialogDescription>Describe the issue with {selectedVendorForComplaint?.name}</DialogDescription>
+            <DialogTitle className="font-serif">Report Issue to Vendor</DialogTitle>
+            <DialogDescription>
+              Describe the issue with {selectedVendorForComplaint?.name} ({selectedVendorForComplaint?.serviceType})
+            </DialogDescription>
           </DialogHeader>
-          <Textarea value={vendorComplaintText} onChange={(e) => setVendorComplaintText(e.target.value)} placeholder="Describe the issue..." className="input-botanical min-h-[120px]" />
-          <DialogFooter>
-            <button onClick={() => setShowVendorComplaintModal(false)} className="btn-botanical-outline">Cancel</button>
-            <button onClick={submitVendorComplaint} disabled={isSubmittingVendorComplaint || !vendorComplaintText.trim()} className="btn-botanical">
-              {isSubmittingVendorComplaint ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Send
-            </button>
-          </DialogFooter>
+          
+          {!showAiSummary ? (
+            <>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Your Complaint</Label>
+                <Textarea 
+                  value={vendorComplaintText} 
+                  onChange={(e) => setVendorComplaintText(e.target.value)} 
+                  placeholder="Describe the issue in detail..." 
+                  className="input-botanical min-h-[150px]"
+                  disabled={isSubmittingVendorComplaint}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Our AI will convert your complaint into a professional message before sending.
+                </p>
+              </div>
+              <DialogFooter>
+                <button 
+                  onClick={closeComplaintModal} 
+                  className="btn-botanical-outline"
+                  disabled={isSubmittingVendorComplaint}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={submitVendorComplaint} 
+                  disabled={isSubmittingVendorComplaint || !vendorComplaintText.trim()} 
+                  className="btn-botanical"
+                >
+                  {isSubmittingVendorComplaint ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> 
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" /> 
+                      Send to Vendor
+                    </>
+                  )}
+                </button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="w-5 h-5 text-primary" />
+                    <h3 className="font-medium text-primary">AI-Generated Professional Message</h3>
+                  </div>
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{aiGeneratedSummary}</p>
+                  </div>
+                </div>
+                
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                    View your original complaint
+                  </summary>
+                  <div className="mt-2 p-3 bg-secondary/50 rounded-lg text-sm text-muted-foreground">
+                    {vendorComplaintText}
+                  </div>
+                </details>
+              </div>
+              
+              <DialogFooter>
+                <button 
+                  onClick={closeComplaintModal} 
+                  className="btn-botanical"
+                >
+                  Close
+                </button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
