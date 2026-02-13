@@ -13,7 +13,7 @@ from PIL import Image
 # Use backend URL from environment
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://wedding-ops-fix.preview.emergentagent.com"
+    BASE_URL = "https://guest-rsvp.preview.emergentagent.com"
 
 # Wedding ID for testing (existing wedding)
 TEST_WEDDING_ID = "0b936780-7926-4e99-ac13-17e269130cd6"

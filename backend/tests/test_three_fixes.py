@@ -4,14 +4,14 @@ Test suite for the three specific fixes:
 2. Guest Invitation Email Flow - Resend integration with error handling
 3. Countdown Timer - Date parsing and API responses
 
-Tests use public endpoint: https://wedding-ops-fix.preview.emergentagent.com
+Tests use public endpoint: https://guest-rsvp.preview.emergentagent.com
 """
 import pytest
 import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://wedding-ops-fix.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://guest-rsvp.preview.emergentagent.com').rstrip('/')
 
 # Test wedding ID from existing data
 EXISTING_WEDDING_ID = "0b936780-7926-4e99-ac13-17e269130cd6"  # Sarah & John Wedding in Mumbai
