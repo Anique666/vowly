@@ -1,6 +1,7 @@
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/context/AuthContext';
 
 const cormorant = Cormorant_Garamond({ 
   subsets: ['latin'],
@@ -17,15 +18,17 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'AI Wedding Ops | Elegant Wedding Planning',
-  description: 'Complete wedding planning platform for managing guests, vendors, and events with AI assistance',
+  title: 'Vowly | Elegant Wedding Planning',
+  description: 'Plan your perfect wedding with AI-powered assistance. Manage guests, vendors, and events in one elegant platform.',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
       <body className="font-sans antialiased bg-white">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster />
       </body>
     </html>
