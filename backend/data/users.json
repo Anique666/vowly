@@ -26,6 +26,24 @@
       "role": "organizer",
       "weddingId": null,
       "createdAt": "2026-02-13T01:12:02.807490+00:00"
+    },
+    {
+      "id": "bf6ca7fc-e26e-4af7-b3c0-38764abc38a4",
+      "email": "asd@email.com",
+      "name": "Anish Kasetty",
+      "password": "e6e7cd88c427e023e92ac87ffb25a8d7057234ac5f587825400c42030bf07d60",
+      "role": "organizer",
+      "weddingId": "dde6a2f4-51d3-4581-9272-2f24d4ecdb94",
+      "createdAt": "2026-02-13T01:20:52.237280+00:00"
+    },
+    {
+      "id": "3e5762b6-03c2-474a-aadf-ec3e43deadda",
+      "email": "a@mail.com",
+      "name": "Anish Kasetty",
+      "password": "d0e5c4cf26bd925aaa95339907e07d3faf68759b2acd99be772bd954ca33e42c",
+      "role": "organizer",
+      "weddingId": "3444bcce-d332-400f-a2a3-23b61ccfed8d",
+      "createdAt": "2026-02-13T01:26:59.759919+00:00"
     }
   ],
   "guests": [
@@ -46,6 +64,15 @@
       "role": "guest",
       "weddingId": null,
       "createdAt": "2026-02-13T01:12:34.891653+00:00"
+    },
+    {
+      "id": "289879c9-d1a2-40a9-aaf9-9467811f539f",
+      "email": "a23@mail.com",
+      "name": "Anish Kasetty",
+      "password": "d0e5c4cf26bd925aaa95339907e07d3faf68759b2acd99be772bd954ca33e42c",
+      "role": "guest",
+      "weddingId": null,
+      "createdAt": "2026-02-13T01:29:14.902701+00:00"
     }
   ]
 }
