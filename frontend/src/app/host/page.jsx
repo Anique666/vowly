@@ -183,6 +183,11 @@ export default function HostPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || 'Failed to save wedding');
       setSavedWeddingId(data.id);
+      
+      // Link wedding to user's account
+      if (updateWeddingId) {
+        await updateWeddingId(data.id);
+      }
 
       for (const vendor of vendors) {
         if (vendor.name.trim()) {
