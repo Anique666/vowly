@@ -5,7 +5,7 @@ This module provides a unified email sending interface using the Maileroo API.
 All email functionality in the application should use this module.
 
 Configuration (via environment variables):
-- MAILEROO_API_KEY: Your Maileroo API key (required)
+- MAILEROO_API_KEY: Your Maileroo sending key (required)
 - MAILEROO_FROM_EMAIL: The verified sender email address (required)
 
 Usage:
@@ -33,6 +33,7 @@ from enum import Enum
 logger = logging.getLogger(__name__)
 
 # Maileroo API Configuration
+# Uses the /send endpoint with form data (simpler than JSON endpoint)
 MAILEROO_API_URL = "https://smtp.maileroo.com/send"
 MAILEROO_API_KEY = os.environ.get('MAILEROO_API_KEY', '')
 MAILEROO_FROM_EMAIL = os.environ.get('MAILEROO_FROM_EMAIL', '')
@@ -65,7 +66,7 @@ class BulkEmailResult:
     error_details: str = ""
 
 
-def _get_config() -> tuple[str, str]:
+def _get_config() -> tuple:
     """
     Get Maileroo configuration from environment variables.
     
@@ -128,50 +129,65 @@ async def send_email(
         api_key, default_from_email = _get_config()
         sender_email = from_email or default_from_email
         
-        # Normalize 'to' to a list
-        recipients = [to] if isinstance(to, str) else to
+        # Normalize 'to' to a string (comma-separated for multiple)
+        if isinstance(to, list):
+            to_str = ", ".join(to)
+        else:
+            to_str = to
         
-        # Build the request payload
-        # Maileroo expects the 'to' as a comma-separated string
-        payload = {
+        # Build form data payload (Maileroo /send endpoint uses form data)
+        form_data = {
             "from": f"{from_name} <{sender_email}>" if from_name else sender_email,
-            "to": ", ".join(recipients),
+            "to": to_str,
             "subject": subject,
             "html": html,
         }
         
         # Add optional fields
         if text:
-            payload["plain"] = text
+            form_data["plain"] = text
         if reply_to:
-            payload["reply_to"] = reply_to
+            form_data["reply_to"] = reply_to
         
-        logger.info(f"Sending email to {recipients} via Maileroo")
+        logger.info(f"Sending email to {to_str} via Maileroo")
+        logger.debug(f"Maileroo payload: from={form_data['from']}, subject={subject}")
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 MAILEROO_API_URL,
                 headers={
                     "X-API-Key": api_key,
-                    "Content-Type": "application/json",
                 },
-                json=payload,
+                data=form_data,  # Use form data, not JSON
                 timeout=30.0
             )
             
-            response_data = response.json() if response.text else {}
+            # Try to parse response
+            try:
+                response_data = response.json() if response.text else {}
+            except Exception:
+                response_data = {"raw_text": response.text}
+            
+            logger.debug(f"Maileroo response: status={response.status_code}, body={response_data}")
             
             if response.status_code == 200:
-                email_id = response_data.get("message_id") or response_data.get("id", "")
-                logger.info(f"Email sent successfully to {recipients}. Message ID: {email_id}")
+                # Success - extract message/reference ID
+                email_id = response_data.get("ref_id") or response_data.get("message_id") or response_data.get("id", "")
+                logger.info(f"Email sent successfully to {to_str}. Ref ID: {email_id}")
                 return EmailResult(
                     success=True,
-                    message=f"Email sent successfully to {len(recipients)} recipient(s)",
+                    message=f"Email sent successfully",
                     email_id=email_id,
                     raw_response=response_data
                 )
             else:
-                error_msg = response_data.get("message") or response_data.get("error") or f"HTTP {response.status_code}"
+                # Error - extract error message
+                error_msg = (
+                    response_data.get("message") or 
+                    response_data.get("error") or 
+                    response_data.get("raw_text") or 
+                    f"HTTP {response.status_code}"
+                )
                 logger.error(f"Maileroo API error: {error_msg}")
                 return EmailResult(
                     success=False,
@@ -290,7 +306,7 @@ async def test_maileroo_connection() -> Dict[str, Any]:
             - connected: bool
             - api_key_set: bool
             - from_email_set: bool
-            - from_email: str (masked)
+            - from_email: str
             - message: str
             
     Example:
@@ -323,31 +339,35 @@ async def test_maileroo_connection() -> Dict[str, Any]:
         result["message"] = "MAILEROO_FROM_EMAIL environment variable is not set"
         return result
     
-    # Test API connectivity (just verify credentials are accepted)
-    # We don't actually send an email, just check the API responds
+    # Test API connectivity with a minimal request
     try:
         async with httpx.AsyncClient() as client:
-            # Make a minimal request to verify API key
-            # Maileroo should return an error for invalid payload but validate the key
+            # Make a minimal request - Maileroo will return an error for missing fields
+            # but we can verify the API key is valid
             response = await client.post(
                 MAILEROO_API_URL,
                 headers={
                     "X-API-Key": api_key,
-                    "Content-Type": "application/json",
                 },
-                json={},  # Empty payload to test auth
+                data={
+                    "from": from_email,
+                    "to": "",  # Empty to trigger validation error, not auth error
+                    "subject": "",
+                    "html": "",
+                },
                 timeout=10.0
             )
             
-            # Even if the request fails due to missing fields, 
-            # we know the API is reachable if we get any response
+            # If we get any response (even validation error), the API is reachable
+            # Auth errors would be 401/403
             if response.status_code in [200, 400, 422]:
                 result["connected"] = True
                 result["message"] = "Maileroo API is configured and reachable"
             elif response.status_code == 401 or response.status_code == 403:
                 result["message"] = "Maileroo API key is invalid or unauthorized"
             else:
-                result["message"] = f"Maileroo API returned unexpected status: {response.status_code}"
+                result["connected"] = True  # Any other response means API is reachable
+                result["message"] = f"Maileroo API is reachable (status: {response.status_code})"
                 
     except httpx.TimeoutException:
         result["message"] = "Maileroo API connection timed out"
@@ -359,13 +379,12 @@ async def test_maileroo_connection() -> Dict[str, Any]:
     return result
 
 
-# Convenience function for simple email sending (synchronous wrapper)
 def get_email_config() -> Dict[str, str]:
     """
     Get current email configuration (for debugging/display).
     
     Returns:
-        dict with api_key_set (bool), from_email (masked string)
+        dict with api_key_set (bool), from_email (string)
     """
     api_key = os.environ.get('MAILEROO_API_KEY', MAILEROO_API_KEY)
     from_email = os.environ.get('MAILEROO_FROM_EMAIL', MAILEROO_FROM_EMAIL)
