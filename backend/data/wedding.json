@@ -802,6 +802,28 @@
         }
       ],
       "vendors": []
+    },
+    {
+      "id": "1cdd72a9-5f13-4975-9ec2-3236a0a9fb46",
+      "name": "Maileroo Test Wedding",
+      "location": "Mumbai, India",
+      "startDate": "2026-08-15",
+      "endDate": "2026-08-17",
+      "days": [
+        {
+          "dayIndex": 0,
+          "date": "2026-08-15",
+          "events": [
+            {
+              "id": "395e2638-bb02-48e6-8afd-3c8ff78424db",
+              "name": "Sangeet",
+              "time": "18:00",
+              "venue": "Grand Hotel"
+            }
+          ]
+        }
+      ],
+      "vendors": []
     }
   ]
 }
