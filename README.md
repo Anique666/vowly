@@ -1,6 +1,6 @@
-# Next.js 14 + FastAPI Starter Template
+# Vowly
 
-A modern, production-ready hackathon starter template featuring Next.js 14 with App Router, TypeScript, Tailwind CSS, shadcn/ui, and a FastAPI backend.
+
 
 ## 🚀 Tech Stack
 
@@ -77,7 +77,6 @@ Once both servers are running, you can verify they're working:
 
 ## 🎉 Wedding Management API
 
-The template includes a complete wedding management system with file-based storage:
 
 ### API Endpoints
 
@@ -308,14 +307,9 @@ CORS is pre-configured in the backend to allow requests from your frontend. Upda
 - [shadcn/ui Documentation](https://ui.shadcn.com/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
-## 🤝 Contributing
-
-This is a hackathon starter template. Feel free to fork and customize for your needs!
 
 ## 📄 License
 
 MIT License - feel free to use for personal or commercial projects.
 
----
 
-**Happy Hacking! 🚀**
