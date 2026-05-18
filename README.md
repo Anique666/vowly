@@ -2,7 +2,7 @@
 
 
 
-## 🚀 Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Next.js 14** - React framework with App Router
@@ -75,7 +75,7 @@ Once both servers are running, you can verify they're working:
 - **Backend Health**: http://localhost:8001/api/health
 - **API Root**: http://localhost:8001/api/
 
-## 🎉 Wedding Management API
+## Wedding Management API
 
 
 ### API Endpoints
@@ -186,7 +186,7 @@ curl -X POST http://localhost:8001/api/weddings \
 - Atomic writes prevent data corruption
 - Files are created automatically if missing
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 /
@@ -213,77 +213,7 @@ curl -X POST http://localhost:8001/api/weddings \
     └── .env                 # Environment variables
 ```
 
-## 🎨 Customization
-
-### Adding New Components
-
-shadcn/ui components are already installed. The component library is located in `/frontend/src/components/ui/`. To use them:
-
-```tsx
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-```
-
-### Color Scheme
-
-The template uses a maroon and white color scheme (perfect for hackathons). To customize:
-
-Edit `/frontend/src/app/globals.css` and modify the CSS variables:
-```css
-:root {
-  --primary: 0 68% 42%;  /* Maroon color */
-  /* ... other variables */
-}
-```
-
-### Adding Backend Routes
-
-Add new API routes in `/backend/server.py`:
-
-```python
-@api_router.get("/your-route")
-async def your_function():
-    return {"data": "your response"}
-```
-
-All routes are automatically prefixed with `/api/`.
-
-## 🔧 Available Scripts
-
-### Frontend
-```bash
-yarn dev      # Start development server
-yarn build    # Build for production
-yarn start    # Start production server
-yarn lint     # Run ESLint
-```
-
-### Backend
-```bash
-# Development with auto-reload
-uvicorn server:app --reload --host 0.0.0.0 --port 8001
-
-# Production
-uvicorn server:app --host 0.0.0.0 --port 8001
-```
-
-## 📦 Adding Dependencies
-
-### Frontend
-```bash
-cd frontend
-yarn add package-name
-```
-
-### Backend
-```bash
-cd backend
-pip install package-name
-# Update requirements.txt
-pip freeze > requirements.txt
-```
-
-## 🚢 Deployment
+## Deployment
 
 ### Frontend (Vercel)
 1. Push code to GitHub
@@ -296,20 +226,5 @@ pip freeze > requirements.txt
 2. Set environment variables in your platform
 3. Deploy using your platform's CLI or dashboard
 
-## 🔐 CORS Configuration
-
-CORS is pre-configured in the backend to allow requests from your frontend. Update `CORS_ORIGINS` in backend `.env` to restrict origins in production.
-
-## 📚 Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [shadcn/ui Documentation](https://ui.shadcn.com/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-
-
-## 📄 License
-
-MIT License - feel free to use for personal or commercial projects.
 
 
